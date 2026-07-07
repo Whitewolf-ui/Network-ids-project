@@ -1,52 +1,157 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Create your account — {{ company.name }}</title>
-<link rel="stylesheet" href="/static/css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Setup — {{ company.name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brandGreen: '#16a34a',
+                        brandGreenHover: '#15803d',
+                        darkBg: '#09090b',
+                        darkCard: '#141417',
+                        darkBorder: '#27272a',
+                        darkTextMuted: '#a1a1aa'
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body>
-<div class="auth-wrap">
-  <div class="auth-card">
-    <a class="auth-brand" href="/">
-      <div class="brand-mark">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2 L21 6 V12 C21 17 17 20.5 12 22 C7 20.5 3 17 3 12 V6 Z" stroke="#F6F8FB" stroke-width="1.6" stroke-linejoin="round"/>
-          <path d="M8 12 L10.5 14.5 L16 9" stroke="#0EA5A0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-      <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16px;">{{ company.name }}</span>
-    </a>
-    <h1>Create your account</h1>
-    <p class="sub">Set up your login to start monitoring your network.</p>
+<body class="min-h-screen bg-darkBg text-zinc-50 flex overflow-hidden font-sans selection:bg-brandGreen/30">
 
-    {% if error %}
-    <div class="form-alert error">{{ error }}</div>
-    {% endif %}
+    <div class="w-full min-h-screen flex">
+        
+        <div class="hidden lg:flex lg:w-1/2 relative bg-zinc-950 items-center justify-center border-r border-darkBorder overflow-hidden">
+            <canvas id="telemetryCanvas" class="absolute inset-0 w-full h-full opacity-60 pointer-events-auto"></canvas>
+            
+            <div class="relative z-10 p-12 max-w-lg text-left space-y-6 pointer-events-none select-none">
+                <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-brandGreen to-emerald-800 flex items-center justify-center p-2.5 shadow-xl shadow-brandGreen/20 border border-brandGreen/30 animate-pulse">
+                    <svg class="w-full h-full text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-black tracking-tight text-white mb-3">
+                        Initialize Administration
+                    </h2>
+                    <p class="text-sm text-darkTextMuted leading-relaxed">
+                        Set up your local manager access profile to log in, handle live traffic feeds, and control monitoring activities across your network.
+                    </p>
+                </div>
+            </div>
+        </div>
 
-    <form method="post" action="/setup">
-      <div class="field">
-        <label for="username">Username</label>
-        <input type="text" id="username" name="username" placeholder="whitewolf" required minlength="3" autocomplete="username">
-      </div>
-      <div class="field">
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" placeholder="you@example.com" required autocomplete="email">
-      </div>
-      <div class="field">
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" placeholder="At least 8 characters" required minlength="8" autocomplete="new-password">
-      </div>
-      <div class="field">
-        <label for="confirm_password">Confirm password</label>
-        <input type="password" id="confirm_password" name="confirm_password" required minlength="8" autocomplete="new-password">
-      </div>
-      <button class="btn btn-primary btn-block" type="submit">Create account</button>
-    </form>
+        <div class="w-full lg:w-1/2 flex flex-col justify-between p-8 sm:p-12 md:p-20 bg-darkBg relative z-20 overflow-y-auto">
+            
+            <div class="flex items-center justify-between">
+                <a href="/" class="flex items-center space-x-2 group">
+                    <svg class="w-4 h-4 text-brandGreen transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    <span class="text-xs font-semibold uppercase tracking-widest text-darkTextMuted group-hover:text-white transition-colors">Go Back</span>
+                </a>
+            </div>
 
-    <p class="auth-foot">Already set up? <a href="/login">Log in</a></p>
-  </div>
-</div>
+            <div class="w-full max-w-md mx-auto my-auto py-12 space-y-8">
+                <div class="space-y-2">
+                    <h1 class="text-2xl font-bold tracking-tight text-white">Create Profile</h1>
+                    <p class="text-sm text-darkTextMuted">Fill out the information below to register your local dashboard admin account.</p>
+                </div>
+
+                {% if error %}
+                    <div class="p-3.5 rounded text-xs border bg-red-500/10 border-red-500/20 text-red-400 flex items-start space-x-2">
+                        <svg class="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        <span>{{ error }}</span>
+                    </div>
+                {% endif %}
+
+                <form action="/setup" method="POST" class="space-y-4">
+                    <div class="space-y-1.5">
+                        <label for="username" class="text-xs font-medium text-zinc-300 uppercase tracking-wider">Username</label>
+                        <input type="text" id="username" name="username" required class="w-full bg-zinc-900 border border-darkBorder rounded px-3.5 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-brandGreen" placeholder="Choose username">
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label for="email" class="text-xs font-medium text-zinc-300 uppercase tracking-wider">Email Address</label>
+                        <input type="email" id="email" name="email" required class="w-full bg-zinc-900 border border-darkBorder rounded px-3.5 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-brandGreen" placeholder="yourname@domain.com">
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label for="iface" class="text-xs font-medium text-zinc-300 uppercase tracking-wider">Default Network Interface</label>
+                        <input type="text" id="iface" name="iface" value="lo" required class="w-full bg-zinc-900 border border-darkBorder rounded px-3.5 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-brandGreen font-mono" placeholder="lo, eth0, wlan0">
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label for="password" class="text-xs font-medium text-zinc-300 uppercase tracking-wider">Password</label>
+                        <input type="password" id="password" name="password" required class="w-full bg-zinc-900 border border-darkBorder rounded px-3.5 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-brandGreen" placeholder="Create strong password">
+                    </div>
+
+                    <button type="submit" class="w-full bg-brandGreen hover:bg-brandGreenHover text-white font-semibold text-sm py-3 rounded transition-all flex items-center justify-center space-x-2 group">
+                        <span>Register Profile</span>
+                        <svg class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </button>
+                </form>
+
+                <div class="text-center text-xs text-darkTextMuted">
+                    Already have an account? 
+                    <a href="/login" class="text-brandGreen hover:underline font-medium ml-1">Sign in here</a>
+                </div>
+            </div>
+
+            <div class="pt-6"></div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('telemetryCanvas');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = canvas.offsetWidth;
+        let height = canvas.height = canvas.offsetHeight;
+        const numNodes = 65, nodes = [], maxDistance = 120;
+        let mouse = { x: null, y: null, radius: 160 };
+
+        window.addEventListener('resize', () => { width = canvas.width = canvas.offsetWidth; height = canvas.height = canvas.offsetHeight; });
+        window.addEventListener('mousemove', (e) => { const rect = canvas.getBoundingClientRect(); mouse.x = e.clientX - rect.left; mouse.y = e.clientY - rect.top; });
+        window.addEventListener('mouseleave', () => { mouse.x = null; mouse.y = null; });
+
+        class TelemetryNode {
+            constructor() { this.x = Math.random() * width; this.y = Math.random() * height; this.vx = (Math.random() - 0.5) * 0.45; this.vy = (Math.random() - 0.5) * 0.45; this.radius = Math.random() * 2 + 1; }
+            update() {
+                this.x += this.vx; this.y += this.vy;
+                if (this.x < 0 || this.x > width) this.vx *= -1; if (this.y < 0 || this.y > height) this.vy *= -1;
+                if (mouse.x !== null && mouse.y !== null) {
+                    const dx = this.x - mouse.x, dy = this.y - mouse.y, dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < mouse.radius) { const force = (mouse.radius - dist) / mouse.radius; this.x += (dx / dist) * force * 1.5; this.y += (dy / dist) * force * 1.5; }
+                }
+            }
+            draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = '#16a34a'; ctx.fill(); }
+        }
+        for (let i = 0; i < numNodes; i++) nodes.push(new TelemetryNode());
+        function renderFrameMatrix() {
+            ctx.clearRect(0, 0, width, height);
+            for (let i = 0; i < nodes.length; i++) {
+                nodes[i].update(); nodes[i].draw();
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y, dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < maxDistance) {
+                        ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y);
+                        const alpha = (1 - (dist / maxDistance)) * 0.18; ctx.strokeStyle = `rgba(22, 163, 74, ${alpha})`; ctx.lineWidth = 0.8; ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(renderFrameMatrix);
+        }
+        renderFrameMatrix();
+    </script>
 </body>
 </html>

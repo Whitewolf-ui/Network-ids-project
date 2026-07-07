@@ -23,6 +23,7 @@ def init_db():
         """
         CREATE TABLE IF NOT EXISTS alerts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
             timestamp TEXT NOT NULL,
             alert_type TEXT NOT NULL,
             source_ip TEXT NOT NULL,
@@ -68,44 +69,44 @@ def init_db():
     conn.close()
 
 
-def insert_alert(alert_type, source_ip, dest_port=None, unique_ports=None, details=""):
+def insert_alert(user_id, alert_type, source_ip, dest_port=None, unique_ports=None, details=""):
     with _lock:
         conn = get_connection()
         conn.execute(
-            """INSERT INTO alerts (timestamp, alert_type, source_ip, dest_port, unique_ports, details)
-               VALUES (?, ?, ?, ?, ?, ?)""",
-            (datetime.now().isoformat(), alert_type, source_ip, dest_port, unique_ports, details),
+            """INSERT INTO alerts (user_id, timestamp, alert_type, source_ip, dest_port, unique_ports, details)
+               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (user_id, datetime.now().isoformat(), alert_type, source_ip, dest_port, unique_ports, details),
         )
         conn.commit()
         conn.close()
 
 
-def get_recent_alerts(limit=50):
+def get_recent_alerts(user_id, limit=50):
     conn = get_connection()
     rows = conn.execute(
-        "SELECT * FROM alerts ORDER BY id DESC LIMIT ?", (limit,)
+        "SELECT * FROM alerts WHERE user_id = ? ORDER BY id DESC LIMIT ?", (user_id, limit)
     ).fetchall()
     conn.close()
     return [dict(r) for r in rows]
 
 
-def get_stats():
+def get_stats(user_id):
     conn = get_connection()
-    total = conn.execute("SELECT COUNT(*) c FROM alerts").fetchone()["c"]
-    unique_ips = conn.execute("SELECT COUNT(DISTINCT source_ip) c FROM alerts").fetchone()["c"]
+    total = conn.execute("SELECT COUNT(*) c FROM alerts WHERE user_id = ?", (user_id,)).fetchone()["c"]
+    unique_ips = conn.execute("SELECT COUNT(DISTINCT source_ip) c FROM alerts WHERE user_id = ?", (user_id,)).fetchone()["c"]
     one_hour_ago = (datetime.now() - timedelta(hours=1)).isoformat()
     last_hour = conn.execute(
-        "SELECT COUNT(*) c FROM alerts WHERE timestamp >= ?", (one_hour_ago,)
+        "SELECT COUNT(*) c FROM alerts WHERE timestamp >= ? AND user_id = ?", (one_hour_ago, user_id)
     ).fetchone()["c"]
     port_scans = conn.execute(
-        "SELECT COUNT(*) c FROM alerts WHERE alert_type = 'port_scan'"
+        "SELECT COUNT(*) c FROM alerts WHERE alert_type = 'port_scan' AND user_id = ?", (user_id,)
     ).fetchone()["c"]
     sensitive = conn.execute(
-        "SELECT COUNT(*) c FROM alerts WHERE alert_type = 'sensitive_port'"
+        "SELECT COUNT(*) c FROM alerts WHERE alert_type = 'sensitive_port' AND user_id = ?", (user_id,)
     ).fetchone()["c"]
     top_ips = conn.execute(
-        """SELECT source_ip, COUNT(*) c FROM alerts
-           GROUP BY source_ip ORDER BY c DESC LIMIT 5"""
+        """SELECT source_ip, COUNT(*) c FROM alerts WHERE user_id = ?
+           GROUP BY source_ip ORDER BY c DESC LIMIT 5""", (user_id,)
     ).fetchall()
     conn.close()
     return {
@@ -118,13 +119,13 @@ def get_stats():
     }
 
 
-def get_chart_data(minutes=30):
+def get_chart_data(user_id, minutes=30):
     """Alert counts bucketed per minute for the last `minutes` minutes."""
     conn = get_connection()
     since = (datetime.now() - timedelta(minutes=minutes)).isoformat()
     rows = conn.execute(
-        "SELECT timestamp FROM alerts WHERE timestamp >= ? ORDER BY timestamp",
-        (since,),
+        "SELECT timestamp FROM alerts WHERE timestamp >= ? AND user_id = ? ORDER BY timestamp",
+        (since, user_id),
     ).fetchall()
     conn.close()
 
@@ -164,10 +165,10 @@ def stop_session(session_id):
     conn.close()
 
 
-def clear_alerts():
+def clear_alerts(user_id):
     with _lock:
         conn = get_connection()
-        conn.execute("DELETE FROM alerts")
+        conn.execute("DELETE FROM alerts WHERE user_id = ?", (user_id,))
         conn.commit()
         conn.close()
 

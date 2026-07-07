@@ -1,18 +1,5 @@
 """
 main.py — Whitewolf Security Network IDS web application.
-
-Routes:
-  GET  /                 public landing page
-  GET  /setup            first-run admin account creation (only if no user exists)
-  POST /setup
-  GET  /login            login form
-  POST /login
-  POST /logout
-  GET  /dashboard         protected — live monitoring dashboard
-  GET  /settings          protected — profile / security / monitoring settings
-  POST /settings/profile
-  POST /settings/password
-  /api/*                  protected JSON API used by the dashboard
 """
 from pathlib import Path
 
@@ -138,7 +125,7 @@ def login_submit(
 @app.post("/logout")
 def logout(request: Request):
     auth.logout(request)
-    response = RedirectResponse("/", status_code=303)
+    response = RedirectResponse("/login", status_code=303)
     auth.clear_session_cookie(response)
     return response
 
@@ -221,7 +208,7 @@ def start_monitoring(request: Request):
     user = require_api_user(request)
     if not user:
         return {"ok": False, "message": "Not authenticated."}
-    ok, message = engine.start(iface=user.get("iface"))
+    ok, message = engine.start(user_id=user["id"], iface=user.get("iface"))
     return {"ok": ok, "message": message, "status": engine.status()}
 
 
@@ -243,28 +230,32 @@ def status(request: Request):
 
 @app.get("/api/alerts")
 def alerts(request: Request, limit: int = 50):
-    if not require_api_user(request):
+    user = require_api_user(request)
+    if not user:
         return []
-    return database.get_recent_alerts(limit=limit)
+    return database.get_recent_alerts(user_id=user["id"], limit=limit)
 
 
 @app.get("/api/stats")
 def stats(request: Request):
-    if not require_api_user(request):
+    user = require_api_user(request)
+    if not user:
         return {}
-    return database.get_stats()
+    return database.get_stats(user_id=user["id"])
 
 
 @app.get("/api/chart-data")
 def chart_data(request: Request, minutes: int = 30):
-    if not require_api_user(request):
+    user = require_api_user(request)
+    if not user:
         return {"labels": [], "values": []}
-    return database.get_chart_data(minutes=minutes)
+    return database.get_chart_data(user_id=user["id"], minutes=minutes)
 
 
 @app.post("/api/alerts/clear")
 def clear_alerts(request: Request):
-    if not require_api_user(request):
+    user = require_api_user(request)
+    if not user:
         return {"ok": False, "message": "Not authenticated."}
-    database.clear_alerts()
+    database.clear_alerts(user_id=user["id"])
     return {"ok": True}

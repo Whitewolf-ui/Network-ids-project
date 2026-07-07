@@ -1,10 +1,5 @@
 """
 ids_engine.py — Packet monitoring engine.
-
-This wraps the original simple_ids.py detection logic (port-scan detection +
-sensitive-port monitoring via Scapy) into a start/stop-able background thread
-that the web dashboard can control, with alerts persisted to SQLite instead
-of just a flat text file.
 """
 import threading
 import datetime
@@ -25,6 +20,7 @@ DANGEROUS_PORTS = {22: "SSH", 23: "Telnet", 3389: "RDP", 1433: "MSSQL", 3306: "M
 class NetworkIDS:
     def __init__(self, iface="lo"):
         self.iface = iface
+        self.user_id = None
         self._thread = None
         self._stop_event = threading.Event()
         self.running = False
@@ -38,6 +34,7 @@ class NetworkIDS:
             "running": self.running,
             "started_at": self.started_at,
             "iface": self.iface,
+            "user_id": self.user_id,
             "monitored_ips": len(self.connection_count),
             "scapy_available": SCAPY_AVAILABLE,
             "error": self._error,
@@ -56,6 +53,7 @@ class NetworkIDS:
 
             if unique_ports == PORT_SCAN_THRESHOLD:
                 database.insert_alert(
+                    user_id=self.user_id,
                     alert_type="port_scan",
                     source_ip=source_ip,
                     unique_ports=unique_ports,
@@ -64,6 +62,7 @@ class NetworkIDS:
 
             if dest_port in DANGEROUS_PORTS:
                 database.insert_alert(
+                    user_id=self.user_id,
                     alert_type="sensitive_port",
                     source_ip=source_ip,
                     dest_port=dest_port,
@@ -88,7 +87,7 @@ class NetworkIDS:
         finally:
             self.running = False
 
-    def start(self, iface=None):
+    def start(self, user_id, iface=None):
         if self.running:
             return False, "Already running."
         if not SCAPY_AVAILABLE:
@@ -96,6 +95,7 @@ class NetworkIDS:
 
         if iface:
             self.iface = iface
+        self.user_id = user_id
         self._error = None
         self._stop_event.clear()
         self.connection_count = defaultdict(set)

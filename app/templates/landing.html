@@ -1,179 +1,254 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ company.name }} — Real-time network intrusion detection</title>
-<meta name="description" content="{{ company.name }} is a self-hosted network intrusion detection dashboard that watches your traffic and flags port scans and sensitive-port access in real time.">
-<link rel="stylesheet" href="/static/css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ company.name }} — Autonomous Network IDS</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brandGreen: '#16a34a',
+                        brandGreenHover: '#15803d',
+                        lightBg: '#fbfbfb',
+                        lightCard: '#ffffff',
+                        lightBorder: '#e4e4e7',
+                        lightTextMuted: '#71717a',
+                        darkBg: '#09090b',
+                        darkCard: '#141417',
+                        darkBorder: '#27272a',
+                        darkTextMuted: '#a1a1aa'
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body>
+<body class="min-h-screen flex flex-col justify-between transition-colors duration-300 bg-lightBg text-zinc-900 dark:bg-darkBg dark:text-zinc-50 selection:bg-brandGreen/30">
 
-<nav class="site-nav">
-  <a class="brand" href="/">
-    <div class="brand" style="gap:10px;">
-      <div class="brand-mark">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2 L21 6 V12 C21 17 17 20.5 12 22 C7 20.5 3 17 3 12 V6 Z" stroke="#F6F8FB" stroke-width="1.6" stroke-linejoin="round"/>
-          <path d="M8 12 L10.5 14.5 L16 9" stroke="#0EA5A0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-      <div class="brand-text">
-        <p class="eyebrow" style="margin-bottom:0;">Network security</p>
-        <h1 style="font-size:18px;">{{ company.name }}</h1>
-      </div>
-    </div>
-  </a>
-  <div class="nav-actions">
-    {% if logged_in %}
-      <a class="btn btn-ghost" href="/dashboard">Go to dashboard</a>
-    {% else %}
-      <a class="btn btn-ghost" href="/login">Log in</a>
-      <a class="btn btn-primary" href="/setup">Get started</a>
-    {% endif %}
-  </div>
-</nav>
+    <!-- Top Navigation Bar -->
+    <header class="border-b bg-white/80 dark:bg-darkBg/80 backdrop-blur sticky top-0 z-50 border-lightBorder dark:border-darkBorder">
+        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded bg-gradient-to-br from-brandGreen to-emerald-700 flex items-center justify-center p-1.5 shadow-md shadow-brandGreen/20">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                </div>
+                <span class="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-600 dark:from-white dark:to-zinc-400">{{ company.name }}</span>
+            </div>
+            
+            <nav class="flex items-center space-x-4">
+                <!-- Theme Toggler -->
+                <button id="theme-toggle" class="p-2 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-lightBorder dark:border-darkBorder transition-all" aria-label="Toggle Theme">
+                    <svg id="theme-toggle-sun" class="w-4 h-4 text-amber-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    <svg id="theme-toggle-moon" class="w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </button>
 
-<header class="hero">
-  <div>
-    <p class="eyebrow">Beta · self-hosted IDS</p>
-    <h1>See what's actually touching your network, the moment it happens.</h1>
-    <p class="lede">
-      {{ company.name }} watches your traffic in real time and flags port scans and
-      connection attempts to sensitive services — SSH, RDP, MySQL and more — the
-      instant they happen, in a dashboard you run yourself.
-    </p>
-    <div class="cta-row">
-      {% if logged_in %}
-        <a class="btn btn-primary" href="/dashboard">Open dashboard</a>
-      {% else %}
-        <a class="btn btn-primary" href="/setup">Create your account</a>
-        <a class="btn btn-ghost" href="/login">I already have one</a>
-      {% endif %}
-    </div>
-  </div>
+                {% if logged_in %}
+                    <a href="/dashboard" class="text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:text-brandGreen dark:hover:text-white transition-colors">Dashboard</a>
+                    <form action="/logout" method="POST" class="inline">
+                        <button type="submit" class="bg-zinc-900 dark:bg-zinc-800 hover:bg-zinc-800 dark:hover:bg-zinc-700 text-white text-xs font-medium px-4 py-2 rounded border border-zinc-800 dark:border-darkBorder transition-all">Sign Out</button>
+                    </form>
+                {% else %}
+                    <a href="/login" class="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">Sign In</a>
+                    <a href="/setup" class="bg-brandGreen hover:bg-brandGreenHover text-white text-xs font-semibold px-4 py-2 rounded transition-all shadow-sm">Get Started</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
 
-  <div class="hero-visual">
-    <div class="hv-head">
-      <span>Live signal</span>
-      <span class="hv-dot"></span>
-    </div>
-    <canvas id="hero-pulse" width="480" height="90"></canvas>
-    <div class="hv-rows">
-      <div class="hv-row"><span class="ip">185.220.101.4</span><span class="tag" style="color:#D14F3E;">Port scan · 7 ports</span></div>
-      <div class="hv-row"><span class="ip">102.89.44.12</span><span class="tag" style="color:#C77A11;">SSH connection attempt</span></div>
-      <div class="hv-row"><span class="ip">41.58.12.201</span><span class="tag" style="color:#C77A11;">RDP connection attempt</span></div>
-    </div>
-  </div>
-</header>
+    <!-- Main Hero Section -->
+    <main class="flex-grow max-w-6xl w-full mx-auto px-6 py-16 flex flex-col items-center justify-center text-center">
+        
+        <!-- Large Floating Brand Logo Block Above Content -->
+        <div class="mb-8 p-6 rounded-2xl bg-zinc-100 dark:bg-zinc-900/50 border border-lightBorder dark:border-darkBorder/80 shadow-inner flex items-center justify-center group hover:scale-[1.02] transition-transform duration-300">
+            <svg class="w-20 h-20 text-brandGreen dark:text-emerald-500 filter drop-shadow-[0_0_15px_rgba(22,163,74,0.2)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+            </svg>
+        </div>
 
-<section class="section">
-  <div class="section-head">
-    <p class="kicker">What it does</p>
-    <h2>Built for the moment before things go wrong</h2>
-    <p>A lightweight IDS that runs on your own hardware, so nothing you capture ever leaves your machine.</p>
-  </div>
-  <div class="features-grid">
-    <div class="feature-card">
-      <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0A756F" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>
-      <h3>Port scan detection</h3>
-      <p>Flags any source touching multiple ports in a short window — the classic signature of reconnaissance.</p>
-    </div>
-    <div class="feature-card">
-      <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0A756F" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg></div>
-      <h3>Sensitive port monitoring</h3>
-      <p>Watches SSH, Telnet, RDP, MSSQL and MySQL, and alerts the instant one gets a connection attempt.</p>
-    </div>
-    <div class="feature-card">
-      <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0A756F" stroke-width="2"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg></div>
-      <h3>Live dashboard</h3>
-      <p>A running feed of alerts, trend charts and top offenders — no more tailing a log file.</p>
-    </div>
-    <div class="feature-card">
-      <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0A756F" stroke-width="2"><path d="M12 2 21 6 21 12C21 17 17 20.5 12 22 7 20.5 3 17 3 12L3 6Z"/></svg></div>
-      <h3>Self-hosted, always private</h3>
-      <p>Runs entirely on your own machine. Your traffic and alert history stay with you.</p>
-    </div>
-  </div>
-</section>
+        <!-- Live Status Badge -->
+        <div class="inline-flex items-center space-x-2 bg-brandGreen/10 border border-brandGreen/20 px-3 py-1.5 rounded-full mb-6">
+            <span class="w-2 h-2 rounded-full bg-brandGreen animate-pulse"></span>
+            <span class="text-xs font-semibold uppercase tracking-wider text-brandGreen">Autonomous Cyber Defense</span>
+        </div>
 
-<section class="section">
-  <div class="section-head">
-    <p class="kicker">Getting set up</p>
-    <h2>Three steps to your first alert</h2>
-  </div>
-  <div class="steps">
-    <div class="step">
-      <div class="num">1</div>
-      <h3>Create your account</h3>
-      <p>Set up your admin login once — everything after that is a click on the dashboard.</p>
-    </div>
-    <div class="step">
-      <div class="num">2</div>
-      <h3>Start monitoring</h3>
-      <p>Pick your interface in settings and hit start. Detection begins immediately.</p>
-    </div>
-    <div class="step">
-      <div class="num">3</div>
-      <h3>Watch alerts arrive</h3>
-      <p>Port scans and sensitive-port hits land in your live feed within seconds.</p>
-    </div>
-  </div>
-</section>
+        <h1 class="text-4xl md:text-6xl font-black tracking-tight max-w-4xl mb-6 leading-[1.15] text-zinc-900 dark:text-white">
+            Building Infrastructure for <br>
+            <span class="bg-clip-text text-transparent bg-gradient-to-r from-brandGreen to-emerald-600 dark:from-brandGreen dark:to-emerald-400">Defensive Cyber Operations</span>
+        </h1>
 
-<div class="cta-band">
-  <h2>Ready to see your own network?</h2>
-  <p>It takes about two minutes to get the dashboard running.</p>
-  {% if logged_in %}
-    <a class="btn btn-primary" href="/dashboard">Open dashboard</a>
-  {% else %}
-    <a class="btn btn-primary" href="/setup">Create your account</a>
-  {% endif %}
-</div>
+        <p class="text-base md:text-lg text-lightTextMuted dark:text-darkTextMuted max-w-2xl mb-10 leading-relaxed">
+            Protecting computing environments through targeted alert inspection, hardware packet telemetry, and multi-user defensive log spaces engineered to block persistent network threats.
+        </p>
 
-<footer class="site-footer">
-  <div class="foot-inner">
-    <div class="foot-brand">
-      <strong>{{ company.name }}</strong>
-      <p>{{ company.address }}</p>
-      <p><a href="mailto:{{ company.support_email }}" style="color:var(--ink-soft);">{{ company.support_email }}</a></p>
-    </div>
-    <div class="foot-links">
-      <a href="{{ company.tiktok }}" target="_blank" rel="noopener">TikTok</a>
-      <a href="mailto:{{ company.support_email }}">Support</a>
-      {% if logged_in %}<a href="/dashboard">Dashboard</a>{% else %}<a href="/login">Log in</a>{% endif %}
-    </div>
-  </div>
-  <p class="disclaimer">
-    {{ company.name }} is beta software intended for use only on networks you own or have
-    explicit permission to monitor. Monitoring traffic on networks without authorization
-    may be unlawful in your jurisdiction. {{ company.name }} is provided as-is, without
-    warranty of any kind, during this beta period.
-  </p>
-</footer>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20 w-full">
+            {% if logged_in %}
+                <a href="/dashboard" class="w-full sm:w-auto bg-brandGreen hover:bg-brandGreenHover text-white font-semibold text-sm px-8 py-3.5 rounded shadow-lg shadow-brandGreen/10 transition-all">Enter Dashboard Console</a>
+            {% else %}
+                <a href="/setup" class="w-full sm:w-auto bg-brandGreen hover:bg-brandGreenHover text-white font-semibold text-sm px-8 py-3.5 rounded transition-all shadow-md">Deploy Engine Free</a>
+                <a href="/login" class="w-full sm:w-auto bg-white dark:bg-zinc-950 hover:bg-zinc-50 dark:hover:bg-zinc-900 border border-lightBorder dark:border-darkBorder text-zinc-900 dark:text-white font-medium text-sm px-8 py-3.5 rounded transition-all">Access Environment</a>
+            {% endif %}
+        </div>
 
-<script>
-const c = document.getElementById('hero-pulse');
-const ctx = c.getContext('2d');
-let phase = 0;
-function draw(){
-  const w = c.width, h = c.height;
-  ctx.clearRect(0,0,w,h);
-  ctx.strokeStyle = '#0EA5A0';
-  ctx.lineWidth = 1.8;
-  ctx.beginPath();
-  const mid = h/2;
-  for(let x=0; x<w; x++){
-    const t = (x+phase)*0.045;
-    const y = mid - Math.sin(t)*6 - Math.sin(t*4.2)*3;
-    if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-  }
-  ctx.stroke();
-  phase += 1.1;
-  requestAnimationFrame(draw);
-}
-draw();
-</script>
+        <!-- Grid Feature Highlights Layout -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left w-full border-t border-lightBorder dark:border-darkBorder/60 pt-16">
+            
+            <div class="bg-lightCard dark:bg-darkCard border border-lightBorder dark:border-darkBorder p-6 rounded shadow-sm hover:shadow-md transition-all">
+                <div class="w-10 h-10 rounded bg-zinc-50 dark:bg-zinc-900 border border-lightBorder dark:border-darkBorder flex items-center justify-center mb-4 text-brandGreen">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <h3 class="text-base font-bold text-zinc-900 dark:text-white mb-2">SOC Alert Analytics</h3>
+                <p class="text-sm text-lightTextMuted dark:text-darkTextMuted leading-relaxed">
+                    Tracks distinct socket connection attempts. Flags multi-port verification attempts instantly while cross-referencing inbound IPs against defined standard indicator groups inside the core logging index.
+                </p>
+            </div>
+
+            <div class="bg-lightCard dark:bg-darkCard border border-lightBorder dark:border-darkBorder p-6 rounded shadow-sm hover:shadow-md transition-all">
+                <div class="w-10 h-10 rounded bg-zinc-50 dark:bg-zinc-900 border border-lightBorder dark:border-darkBorder flex items-center justify-center mb-4 text-brandGreen">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                </div>
+                <h3 class="text-base font-bold text-zinc-900 dark:text-white mb-2">Granular Inspection</h3>
+                <p class="text-sm text-lightTextMuted dark:text-darkTextMuted leading-relaxed">
+                    Processes structured transport layers to log source parameters, payload headers, and explicit packet attributes. Perfect for evaluating network handshake conditions and frame trends directly.
+                </p>
+            </div>
+
+            <div class="bg-lightCard dark:bg-darkCard border border-lightBorder dark:border-darkBorder p-6 rounded shadow-sm hover:shadow-md transition-all">
+                <div class="w-10 h-10 rounded bg-zinc-50 dark:bg-zinc-900 border border-lightBorder dark:border-darkBorder flex items-center justify-center mb-4 text-brandGreen">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+                </div>
+                <h3 class="text-base font-bold text-zinc-900 dark:text-white mb-2">Interface Scoping</h3>
+                <p class="text-sm text-lightTextMuted dark:text-darkTextMuted leading-relaxed">
+                    Binds the low-level asynchronous packet capture engine to specific operational interfaces. Handles loopback evaluation and localized internal network loops via isolated listening hooks.
+                </p>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Layout Grid Footer -->
+    <footer class="border-t bg-white dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 border-lightBorder dark:border-darkBorder transition-colors duration-300">
+        <div class="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-4 gap-10">
+            
+            <!-- Column 1: Info and Branding -->
+            <div class="space-y-4">
+                <div class="flex items-center space-x-2">
+                    <div class="w-6 h-6 rounded bg-brandGreen flex items-center justify-center p-1">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                    </div>
+                    <span class="font-bold text-base text-zinc-900 dark:text-white tracking-tight">{{ company.name }}</span>
+                </div>
+                <p class="text-xs text-lightTextMuted dark:text-darkTextMuted leading-relaxed">
+                    Building the infrastructure for African security defense, blue team operations, and localized active telemetry logging.
+                </p>
+                <div class="pt-2">
+                    <a href="https://www.linkedin.com/in/clinton-oreoluwa-79643934a/" target="_blank" class="inline-flex items-center text-xs text-brandGreen font-medium hover:underline">
+                        Connect on LinkedIn
+                        <svg class="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Column 2: Navigation Links -->
+            <div>
+                <h4 class="text-xs font-semibold uppercase tracking-wider text-zinc-900 dark:text-white mb-4">Navigation</h4>
+                <ul class="space-y-2.5 text-xs">
+                    <li><a href="/" class="hover:text-brandGreen dark:hover:text-white transition-colors">Home</a></li>
+                    <li><a href="/login" class="hover:text-brandGreen dark:hover:text-white transition-colors">Sign In</a></li>
+                    <li><a href="/setup" class="hover:text-brandGreen dark:hover:text-white transition-colors">Register</a></li>
+                    <li><a href="/dashboard" class="hover:text-brandGreen dark:hover:text-white transition-colors">Dashboard Console</a></li>
+                </ul>
+            </div>
+
+            <!-- Column 3: Capabilities -->
+            <div>
+                <h4 class="text-xs font-semibold uppercase tracking-wider text-zinc-900 dark:text-white mb-4">Capabilities</h4>
+                <ul class="space-y-2.5 text-xs">
+                    <li><span class="text-lightTextMuted dark:text-darkTextMuted">Log Analysis</span></li>
+                    <li><span class="text-lightTextMuted dark:text-darkTextMuted">Defensive Engineering</span></li>
+                    <li><span class="text-lightTextMuted dark:text-darkTextMuted">Asset Assessment</span></li>
+                    <li><span class="text-lightTextMuted dark:text-darkTextMuted">Threat Mitigation</span></li>
+                </ul>
+            </div>
+
+            <!-- Column 4: Get In Touch -->
+            <div class="space-y-4">
+                <h4 class="text-xs font-semibold uppercase tracking-wider text-zinc-900 dark:text-white mb-4">Get In Touch</h4>
+                <ul class="space-y-2.5 text-xs">
+                    <li class="flex items-start space-x-2">
+                        <svg class="w-4 h-4 text-brandGreen shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        <span>Osun, Ondo & Lagos, <br>Nigeria</span>
+                    </li>
+                    <li class="flex items-center space-x-2">
+                        <svg class="w-4 h-4 text-brandGreen shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L22 8m-9 11h3a2 2 0 002-2v-3a2 2 0 00-2-2h-3m-1 10V4a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h4a2 2 0 002-2z"></path></svg>
+                        <a href="mailto:{{ company.support_email }}" class="hover:text-brandGreen dark:hover:text-white transition-colors">{{ company.support_email }}</a>
+                    </li>
+                    <!-- WhatsApp Support Chat Direct Triggers -->
+                    <li class="border-t border-lightBorder dark:border-darkBorder pt-2 mt-1 space-y-1">
+                        <span class="block text-[10px] uppercase font-bold tracking-wider text-lightTextMuted dark:text-darkTextMuted">WhatsApp Support:</span>
+                        <a href="https://wa.me/2349068980442" target="_blank" class="flex items-center space-x-1.5 text-xs text-zinc-700 dark:text-zinc-300 hover:text-brandGreen font-mono">
+                            <span class="w-1.5 h-1.5 rounded-full bg-brandGreen"></span>
+                            <span>09068980442</span>
+                        </a>
+                        <a href="https://wa.me/2349127215214" target="_blank" class="flex items-center space-x-1.5 text-xs text-zinc-700 dark:text-zinc-300 hover:text-brandGreen font-mono">
+                            <span class="w-1.5 h-1.5 rounded-full bg-brandGreen"></span>
+                            <span>09127215214</span>
+                        </a>
+                    </li>
+                </ul>
+                <a href="mailto:{{ company.support_email }}?subject=Inquiry — Whitewolf Security" class="inline-flex items-center justify-between w-full bg-zinc-900 dark:bg-white text-white dark:text-black font-semibold text-xs px-4 py-2.5 rounded hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-all group shadow-sm">
+                    <span>Send a Message</span>
+                    <svg class="w-3 h-3 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </a>
+            </div>
+
+        </div>
+
+        <!-- Absolute Bottom Bar -->
+        <div class="border-t border-lightBorder dark:border-darkBorder/60 py-6 text-center text-[11px] text-lightTextMuted dark:text-darkTextMuted">
+            &copy; 2026 {{ company.name }}. Dedicated Blue Team Analysis Lab. All tracking rights reserved.
+        </div>
+    </footer>
+
+    <!-- Theme Toggling Logic Script -->
+    <script>
+        const htmlElement = document.documentElement;
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const sunIcon = document.getElementById('theme-toggle-sun');
+        const moonIcon = document.getElementById('theme-toggle-moon');
+
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            htmlElement.classList.add('dark');
+            htmlElement.classList.remove('light');
+            sunIcon.classList.remove('hidden');
+            moonIcon.classList.add('hidden');
+        } else {
+            htmlElement.classList.remove('dark');
+            htmlElement.classList.add('light');
+            sunIcon.classList.add('hidden');
+            moonIcon.classList.remove('hidden');
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            if (htmlElement.classList.contains('dark')) {
+                htmlElement.classList.remove('dark');
+                htmlElement.classList.add('light');
+                localStorage.setItem('theme', 'light');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            } else {
+                htmlElement.classList.add('dark');
+                htmlElement.classList.remove('light');
+                localStorage.setItem('theme', 'dark');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            }
+        });
+    </script>
 
 </body>
 </html>
