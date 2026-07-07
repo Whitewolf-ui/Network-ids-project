@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhiteWolf IDS — Live Dashboard</title>
+<link rel="stylesheet" href="/static/css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2 L21 6 V12 C21 17 17 20.5 12 22 C7 20.5 3 17 3 12 V6 Z" stroke="#F6F8FB" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M8 12 L10.5 14.5 L16 9" stroke="#0EA5A0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <p class="eyebrow">Network intrusion detection · beta</p>
+        <h1>WhiteWolf IDS</h1>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="status-pill" id="status-pill">
+        <span class="status-dot"></span>
+        <span id="status-text">Idle</span>
+      </div>
+      <button class="action start" id="btn-start">Start monitoring</button>
+      <button class="action stop" id="btn-stop" style="display:none;">Stop monitoring</button>
+      <a class="nav-link" href="/settings" title="Profile settings">
+        <span class="avatar">{{ user.username[:2].upper() }}</span>
+      </a>
+      <form action="/logout" method="post" style="display:inline;">
+        <button class="action logout" type="submit" title="Log out">Log out</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="signal-strip">
+    <span class="label">Signal</span>
+    <canvas id="pulse" width="900" height="46"></canvas>
+    <span class="iface" id="iface-label">iface: {{ user.iface }}</span>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="n" id="stat-total">0</div>
+      <div class="l">Total alerts</div>
+    </div>
+    <div class="stat-card danger">
+      <div class="n" id="stat-scans">0</div>
+      <div class="l">Port scans</div>
+    </div>
+    <div class="stat-card warn">
+      <div class="n" id="stat-sensitive">0</div>
+      <div class="l">Sensitive-port hits</div>
+    </div>
+    <div class="stat-card accent">
+      <div class="n" id="stat-ips">0</div>
+      <div class="l">Unique source IPs</div>
+    </div>
+    <div class="stat-card">
+      <div class="n" id="stat-hour">0</div>
+      <div class="l">Alerts, last hour</div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Live alert feed</h2>
+        <span class="sub" id="feed-count">0 alerts</span>
+      </div>
+      <div class="panel-body">
+        <div class="feed" id="feed">
+          <div class="empty-state">No alerts yet. Start monitoring to begin watching traffic.</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Watchlist</h2>
+          <span class="sub">Threshold: {{ threshold }} ports</span>
+        </div>
+        <div class="panel-body" id="watchlist">
+          {% for port, service in dangerous_ports.items() %}
+          <div class="watch-item">
+            <div><span class="svc">{{ service }}</span> <span class="port">· :{{ port }}</span></div>
+            <span class="count" id="watch-{{ port }}">0</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="panel spacer-panel">
+        <div class="panel-head">
+          <h2>Alerts / minute</h2>
+          <span class="sub">Last 30 min</span>
+        </div>
+        <div class="chart-box"><canvas id="trend-chart"></canvas></div>
+      </div>
+
+      <div class="panel spacer-panel">
+        <div class="panel-head">
+          <h2>Top source IPs</h2>
+        </div>
+        <div class="panel-body" id="top-ips">
+          <div class="empty-state">No data yet.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script src="/static/js/dashboard.js"></script>
+</body>
+</html>

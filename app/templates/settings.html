@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings — {{ company.name }}</title>
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back-link" href="/dashboard">&larr; Back to dashboard</a>
+
+  <div class="settings-header">
+    <h1>Account settings</h1>
+    <p>Manage your profile, security, and monitoring preferences.</p>
+  </div>
+
+  {% if saved == "profile" %}
+    <div class="form-alert success" style="max-width:600px;">Profile updated.</div>
+  {% elif saved == "password" %}
+    <div class="form-alert success" style="max-width:600px;">Password changed.</div>
+  {% elif error == "wrongpw" %}
+    <div class="form-alert error" style="max-width:600px;">Current password is incorrect.</div>
+  {% elif error == "short" %}
+    <div class="form-alert error" style="max-width:600px;">New password must be at least 8 characters.</div>
+  {% elif error == "mismatch" %}
+    <div class="form-alert error" style="max-width:600px;">New passwords don't match.</div>
+  {% endif %}
+
+  <div class="settings-grid">
+    <div class="profile-card">
+      <div class="avatar-lg">{{ user.username[:2].upper() }}</div>
+      <h2>{{ user.username }}</h2>
+      <p class="muted">{{ user.email }}</p>
+      <div class="meta-row"><span>Member since</span><span>{{ user.created_at[:10] }}</span></div>
+      <div class="meta-row"><span>Monitoring iface</span><span>{{ user.iface }}</span></div>
+      <form action="/logout" method="post" style="margin-top:16px;">
+        <button class="btn btn-ghost btn-block" type="submit">Log out</button>
+      </form>
+    </div>
+
+    <div class="settings-panels">
+
+      <div class="settings-panel">
+        <h3>Profile</h3>
+        <p class="desc">Your contact email and default monitoring interface.</p>
+        <form method="post" action="/settings/profile">
+          <div class="field-row">
+            <div class="field">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" value="{{ user.email or '' }}" required>
+            </div>
+            <div class="field">
+              <label for="iface">Monitoring interface</label>
+              <input type="text" id="iface" name="iface" value="{{ user.iface }}" placeholder="lo">
+              <p class="hint">Use "lo" for local testing, or a real interface like "eth0" once you're monitoring live traffic.</p>
+            </div>
+          </div>
+          <button class="btn btn-primary" type="submit">Save changes</button>
+        </form>
+      </div>
+
+      <div class="settings-panel">
+        <h3>Password</h3>
+        <p class="desc">Choose a strong password you don't use anywhere else.</p>
+        <form method="post" action="/settings/password">
+          <div class="field">
+            <label for="current_password">Current password</label>
+            <input type="password" id="current_password" name="current_password" required autocomplete="current-password">
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="new_password">New password</label>
+              <input type="password" id="new_password" name="new_password" required minlength="8" autocomplete="new-password">
+            </div>
+            <div class="field">
+              <label for="confirm_new_password">Confirm new password</label>
+              <input type="password" id="confirm_new_password" name="confirm_new_password" required minlength="8" autocomplete="new-password">
+            </div>
+          </div>
+          <button class="btn btn-primary" type="submit">Update password</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>

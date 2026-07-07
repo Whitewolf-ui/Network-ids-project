@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ company.name }} — Real-time network intrusion detection</title>
+<meta name="description" content="{{ company.name }} is a self-hosted network intrusion detection dashboard that watches your traffic and flags port scans and sensitive-port access in real time.">
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <a class="brand" href="/">
+    <div class="brand" style="gap:10px;">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2 L21 6 V12 C21 17 17 20.5 12 22 C7 20.5 3 17 3 12 V6 Z" stroke="#F6F8FB" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M8 12 L10.5 14.5 L16 9" stroke="#0EA5A0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <p class="eyebrow" style="margin-bottom:0;">Network security</p>
+        <h1 style="font-size:18px;">{{ company.name }}</h1>
+      </div>
+    </div>
+  </a>
+  <div class="nav-actions">
+    {% if logged_in %}
+      <a class="btn btn-ghost" href="/dashboard">Go to dashboard</a>
+    {% else %}
+      <a class="btn btn-ghost" href="/login">Log in</a>
+      <a class="btn btn-primary" href="/setup">Get started</a>
+    {% endif %}
+  </div>
+</nav>
+
+<header class="hero">
+  <div>
+    <p class="eyebrow">Beta · self-hosted IDS</p>
+    <h1>See what's actually touching your network, the moment it happens.</h1>
+    <p class="lede">
+      {{ company.name }} watches your traffic in real time and flags port scans and
+      connection attempts to sensitive services — SSH, RDP, MySQL and more — the
+      instant they happen, in a dashboard you run yourself.
+    </p>
+    <div class="cta-row">
+      {% if logged_in %}
+        <a class="btn btn-primary" href="/dashboard">Open dashboard</a>
+      {% else %}
+        <a class="btn btn-primary" href="/setup">Create your account</a>
+        <a class="btn btn-ghost" href="/login">I already have one</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="hv-head">
+      <span>Live signal</span>
+      <span class="hv-dot"></span>
+    </div>
+    <canvas id="hero-pulse" width="480" height="90"></canvas>
+    <div class="hv-rows">
+      <div class="hv-row"><span class="ip">185.220.101.4</span><span class="tag" style="color:#D14F3E;">Port scan · 7 ports</span></div>
+      <div class="hv-row"><span class="ip">102.89.44.12</span><span class="tag" style="color:#C77A11;">SSH connection attempt</span></div>
+      <div class="hv-row"><span class="ip">41.58.12.201</span><span class="tag" style="color:#C77A11;">RDP connection attempt</span></div>
+    </div>
+  </div>
+</header>
+
+<section class="section">
+  <div class="section-head">
+    <p class="kicker">What it does</p>
+    <h2>Built for the moment before things go wrong</h2>
+    <p>A lightweight IDS that runs on your own hardware, so nothing you capture ever leaves your machine.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0A756F" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>
+      <h3>Port scan detection</h3>
+      <p>Flags any source touching multiple ports in a short window — the classic signature of reconnaissance.</p>
+    </div>
+    <div class="feature-card">
+      <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0A756F" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg></div>
+      <h3>Sensitive port monitoring</h3>
+      <p>Watches SSH, Telnet, RDP, MSSQL and MySQL, and alerts the instant one gets a connection attempt.</p>
+    </div>
+    <div class="feature-card">
+      <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0A756F" stroke-width="2"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg></div>
+      <h3>Live dashboard</h3>
+      <p>A running feed of alerts, trend charts and top offenders — no more tailing a log file.</p>
+    </div>
+    <div class="feature-card">
+      <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0A756F" stroke-width="2"><path d="M12 2 21 6 21 12C21 17 17 20.5 12 22 7 20.5 3 17 3 12L3 6Z"/></svg></div>
+      <h3>Self-hosted, always private</h3>
+      <p>Runs entirely on your own machine. Your traffic and alert history stay with you.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <p class="kicker">Getting set up</p>
+    <h2>Three steps to your first alert</h2>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="num">1</div>
+      <h3>Create your account</h3>
+      <p>Set up your admin login once — everything after that is a click on the dashboard.</p>
+    </div>
+    <div class="step">
+      <div class="num">2</div>
+      <h3>Start monitoring</h3>
+      <p>Pick your interface in settings and hit start. Detection begins immediately.</p>
+    </div>
+    <div class="step">
+      <div class="num">3</div>
+      <h3>Watch alerts arrive</h3>
+      <p>Port scans and sensitive-port hits land in your live feed within seconds.</p>
+    </div>
+  </div>
+</section>
+
+<div class="cta-band">
+  <h2>Ready to see your own network?</h2>
+  <p>It takes about two minutes to get the dashboard running.</p>
+  {% if logged_in %}
+    <a class="btn btn-primary" href="/dashboard">Open dashboard</a>
+  {% else %}
+    <a class="btn btn-primary" href="/setup">Create your account</a>
+  {% endif %}
+</div>
+
+<footer class="site-footer">
+  <div class="foot-inner">
+    <div class="foot-brand">
+      <strong>{{ company.name }}</strong>
+      <p>{{ company.address }}</p>
+      <p><a href="mailto:{{ company.support_email }}" style="color:var(--ink-soft);">{{ company.support_email }}</a></p>
+    </div>
+    <div class="foot-links">
+      <a href="{{ company.tiktok }}" target="_blank" rel="noopener">TikTok</a>
+      <a href="mailto:{{ company.support_email }}">Support</a>
+      {% if logged_in %}<a href="/dashboard">Dashboard</a>{% else %}<a href="/login">Log in</a>{% endif %}
+    </div>
+  </div>
+  <p class="disclaimer">
+    {{ company.name }} is beta software intended for use only on networks you own or have
+    explicit permission to monitor. Monitoring traffic on networks without authorization
+    may be unlawful in your jurisdiction. {{ company.name }} is provided as-is, without
+    warranty of any kind, during this beta period.
+  </p>
+</footer>
+
+<script>
+const c = document.getElementById('hero-pulse');
+const ctx = c.getContext('2d');
+let phase = 0;
+function draw(){
+  const w = c.width, h = c.height;
+  ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle = '#0EA5A0';
+  ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  const mid = h/2;
+  for(let x=0; x<w; x++){
+    const t = (x+phase)*0.045;
+    const y = mid - Math.sin(t)*6 - Math.sin(t*4.2)*3;
+    if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  phase += 1.1;
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+
+</body>
+</html>

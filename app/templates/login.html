@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log in — {{ company.name }}</title>
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <a class="auth-brand" href="/">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2 L21 6 V12 C21 17 17 20.5 12 22 C7 20.5 3 17 3 12 V6 Z" stroke="#F6F8FB" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M8 12 L10.5 14.5 L16 9" stroke="#0EA5A0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16px;">{{ company.name }}</span>
+    </a>
+    <h1>Welcome back</h1>
+    <p class="sub">Log in to open your monitoring dashboard.</p>
+
+    {% if error %}
+    <div class="form-alert error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" action="/login">
+      <div class="field">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required autocomplete="username" autofocus>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required autocomplete="current-password">
+      </div>
+      <button class="btn btn-primary btn-block" type="submit">Log in</button>
+    </form>
+
+    <p class="auth-foot">Don't have an account? <a href="/setup">Create one</a></p>
+  </div>
+</div>
+</body>
+</html>
