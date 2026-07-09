@@ -203,7 +203,7 @@
 
         async function fetchStatusUpdate() {
             try {
-                const res = await fetch('/api/status');
+                const res = await fetch('/api/monitoring/status');
                 const data = await res.json();
 
                 if (data.running) {
