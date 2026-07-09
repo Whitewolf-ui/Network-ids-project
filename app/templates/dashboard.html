@@ -145,15 +145,35 @@
         </div>
 
         <div class="bg-darkCard border border-darkBorder rounded-xl overflow-hidden shadow-sm">
-            <div class="p-6 border-b border-darkBorder flex items-center justify-between">
+            <div class="p-6 border-b border-darkBorder flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h3 class="text-sm font-bold uppercase tracking-wider text-zinc-300">Recent Logs & Security Alerts</h3>
-                    <p class="text-[11px] text-zinc-500 mt-0.5">Click any row sequence to expand incident definitions and remediation vectors.</p>
+                    <p class="text-[11px] text-zinc-500 mt-0.5">Filter telemetry results or click any row sequence to expand incident definitions.</p>
                 </div>
-                <button onclick="updateDashboardMetrics()" class="text-xs text-brandBlue hover:underline font-medium flex items-center space-x-1">
+                <button onclick="updateDashboardMetrics()" class="text-xs text-brandBlue hover:underline font-medium flex items-center space-x-1 self-start md:self-auto">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.253 8H18"></path></svg>
-                    <span>Refresh</span>
+                    <span>Refresh Data</span>
                 </button>
+            </div>
+
+            <div class="p-4 bg-black/40 border-b border-darkBorder/60 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                    <label class="block text-[10px] uppercase font-bold tracking-wider text-zinc-500 mb-1">Origin Source IP</label>
+                    <input type="text" id="filter-ip" placeholder="e.g. 192.168.1.1" class="w-full bg-zinc-900 border border-darkBorder rounded px-2.5 py-1.5 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-brandBlue font-mono">
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase font-bold tracking-wider text-zinc-500 mb-1">Incident Profile Type</label>
+                    <select id="filter-type" class="w-full bg-zinc-900 border border-darkBorder rounded px-2.5 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-brandBlue font-mono">
+                        <option value="">ALL PROFILES</option>
+                        <option value="SCAN">PORT SCAN / RECON</option>
+                        <option value="BRUTE">AUTHENTICATION BRUTEFORCE</option>
+                        <option value="DOS">DOS FLOOD DETECTED</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase font-bold tracking-wider text-zinc-500 mb-1">Target Destination Port</label>
+                    <input type="text" id="filter-port" placeholder="e.g. 80" class="w-full bg-zinc-900 border border-darkBorder rounded px-2.5 py-1.5 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-brandBlue font-mono">
+                </div>
             </div>
 
             <div class="overflow-x-auto">
@@ -185,10 +205,17 @@
 
     <script>
         let trendChart;
+        let completeAlertCache = []; // Internal memory store for matching live log data
+        
         const btnToggle = document.getElementById('btn-toggle');
         const statusBadge = document.getElementById('status-badge');
         const scifiModal = document.getElementById('scifi-modal');
         const terminalLogs = document.getElementById('modal-terminal-logs');
+        
+        // Form Controls Hooks
+        const filterIp = document.getElementById('filter-ip');
+        const filterType = document.getElementById('filter-type');
+        const filterPort = document.getElementById('filter-port');
 
         function initChartStructure() {
             const ctx = document.getElementById('incidentChart').getContext('2d');
@@ -255,6 +282,66 @@
             return { explanation, advice };
         }
 
+        // Render logs with filtering parameters factored in
+        function renderFilteredAlerts() {
+            const tbody = document.getElementById('alerts-table-body');
+            const targetIp = filterIp.value.trim().toLowerCase();
+            const targetType = filterType.value;
+            const targetPort = filterPort.value.trim();
+
+            const filteredData = completeAlertCache.filter(item => {
+                const matchesIp = !targetIp || item.source_ip.toLowerCase().includes(targetIp);
+                const matchesType = !targetType || item.alert_type.toUpperCase().includes(targetType);
+                const matchesPort = !targetPort || (item.dest_port !== null && String(item.dest_port).includes(targetPort));
+                return matchesIp && matchesType && matchesPort;
+            });
+
+            if (filteredData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-zinc-500">No security alerts match your selected preference constraints.</td></tr>`;
+                return;
+            }
+
+            let rowsContent = "";
+            filteredData.forEach((item, index) => {
+                const analysis = generateAnalysis(item.alert_type, item.dest_port, item.details);
+                const isScan = item.alert_type.toUpperCase().includes('SCAN');
+                
+                rowsContent += `
+                    <tr onclick="toggleRowBreakdown(${index})" class="hover:bg-zinc-900/50 cursor-pointer border-b border-darkBorder/40 transition-colors">
+                        <td class="p-4 text-center">
+                            <svg id="icon-${index}" class="w-3 h-3 text-zinc-500 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
+                        </td>
+                        <td class="p-4 text-zinc-400 whitespace-nowrap">${item.timestamp ? item.timestamp.split('.')[0] : '—'}</td>
+                        <td class="p-4 font-bold ${isScan ? 'text-amber-400' : 'text-red-400'}">${item.alert_type}</td>
+                        <td class="p-4 text-zinc-200">${item.source_ip}</td>
+                        <td class="p-4 text-zinc-200">${item.dest_port ?? 'Multiple'}</td>
+                        <td class="p-4 text-zinc-400 max-w-xs truncate">${item.details || '—'}</td>
+                    </tr>
+                    <tr id="breakdown-${index}" class="hidden bg-zinc-950/60 border-b border-darkBorder/40">
+                        <td colspan="6" class="p-5 text-xs space-y-3 font-sans">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 leading-relaxed">
+                                <div class="space-y-1 bg-black/40 border border-darkBorder/40 p-4 rounded">
+                                    <div class="text-[10px] font-mono font-bold uppercase tracking-wider text-red-400 flex items-center space-x-1.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                                        <span>Incident Forensic Summary</span>
+                                    </div>
+                                    <p class="text-zinc-300 pt-1 font-mono text-[11px]">${analysis.explanation}</p>
+                                </div>
+                                <div class="space-y-1 bg-black/40 border border-darkBorder/40 p-4 rounded">
+                                    <div class="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-400 flex items-center space-x-1.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                        <span>Remediation & Hardening Steps</span>
+                                    </div>
+                                    <p class="text-zinc-300 pt-1 font-mono text-[11px]">${analysis.advice}</p>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = rowsContent;
+        }
+
         async function updateDashboardMetrics() {
             await fetchStatusUpdate();
             try {
@@ -262,53 +349,9 @@
                 const statsData = await statsRes.json();
                 document.getElementById('stat-total-alerts').innerText = statsData.total_alerts ?? 0;
 
-                const alertsRes = await fetch('/api/alerts?limit=15');
-                const alertsData = await alertsRes.json();
-                const tbody = document.getElementById('alerts-table-body');
-
-                if (!alertsData || alertsData.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-zinc-500">No security alerts have been triggered yet.</td></tr>`;
-                } else {
-                    let rowsContent = "";
-                    alertsData.forEach((item, index) => {
-                        const analysis = generateAnalysis(item.alert_type, item.dest_port, item.details);
-                        const isScan = item.alert_type.toUpperCase().includes('SCAN');
-                        
-                        rowsContent += `
-                            <tr onclick="toggleRowBreakdown(${index})" class="hover:bg-zinc-900/50 cursor-pointer border-b border-darkBorder/40 transition-colors">
-                                <td class="p-4 text-center">
-                                    <svg id="icon-${index}" class="w-3 h-3 text-zinc-500 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
-                                </td>
-                                <td class="p-4 text-zinc-400 whitespace-nowrap">${item.timestamp ? item.timestamp.split('.')[0] : '—'}</td>
-                                <td class="p-4 font-bold ${isScan ? 'text-amber-400' : 'text-red-400'}">${item.alert_type}</td>
-                                <td class="p-4 text-zinc-200">${item.source_ip}</td>
-                                <td class="p-4 text-zinc-200">${item.dest_port ?? 'Multiple'}</td>
-                                <td class="p-4 text-zinc-400 max-w-xs truncate">${item.details || '—'}</td>
-                            </tr>
-                            <tr id="breakdown-${index}" class="hidden bg-zinc-950/60 border-b border-darkBorder/40">
-                                <td colspan="6" class="p-5 text-xs space-y-3 font-sans">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 leading-relaxed">
-                                        <div class="space-y-1 bg-black/40 border border-darkBorder/40 p-4 rounded">
-                                            <div class="text-[10px] font-mono font-bold uppercase tracking-wider text-red-400 flex items-center space-x-1.5">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
-                                                <span>Incident Forensic Summary</span>
-                                            </div>
-                                            <p class="text-zinc-300 pt-1 font-mono text-[11px]">${analysis.explanation}</p>
-                                        </div>
-                                        <div class="space-y-1 bg-black/40 border border-darkBorder/40 p-4 rounded">
-                                            <div class="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-400 flex items-center space-x-1.5">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                                                <span>Remediation & Hardening Steps</span>
-                                            </div>
-                                            <p class="text-zinc-300 pt-1 font-mono text-[11px]">${analysis.advice}</p>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        `;
-                    });
-                    tbody.innerHTML = rowsContent;
-                }
+                const alertsRes = await fetch('/api/alerts?limit=50'); // Pull broader frame for localized filtering
+                completeAlertCache = await alertsRes.json() || [];
+                renderFilteredAlerts();
 
                 const chartRes = await fetch('/api/chart-data?minutes=15');
                 const chartData = await chartRes.json();
@@ -382,6 +425,11 @@
                 await updateDashboardMetrics();
             } catch (err) { console.error("Toggle exception:", err); }
             btnToggle.disabled = false;
+        });
+
+        // Attach dynamic live input filtering listeners
+        [filterIp, filterType, filterPort].forEach(element => {
+            element.addEventListener('input', renderFilteredAlerts);
         });
 
         window.addEventListener('DOMContentLoaded', () => {
