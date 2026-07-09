@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Console Configurations — Whitewolf Security</title>
+    <title>Settings — Whitewolf Intelligence</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -11,8 +11,8 @@
             theme: {
                 extend: {
                     colors: {
-                        brandGreen: '#16a34a',
-                        brandGreenHover: '#15803d',
+                        brandBlue: '#3b82f6',
+                        brandBlueHover: '#2563eb',
                         darkBg: '#09090b',
                         darkCard: '#141417',
                         darkBorder: '#27272a',
@@ -23,20 +23,18 @@
         }
     </script>
 </head>
-<body class="min-h-screen bg-darkBg text-zinc-100 font-sans flex flex-col justify-between selection:bg-brandGreen/30 relative">
+<body class="min-h-screen bg-darkBg text-zinc-100 font-sans flex flex-col justify-between selection:bg-brandBlue/30 relative">
 
     <header class="border-b border-darkBorder bg-zinc-950/80 backdrop-blur sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <div class="w-7 h-7 rounded bg-gradient-to-br from-brandGreen to-emerald-700 flex items-center justify-center p-1.5 shadow-md shadow-brandGreen/10 border border-brandGreen/20">
-                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                </div>
-                <span class="font-bold text-sm uppercase tracking-wider text-white">Whitewolf Center</span>
+                <img src="/static/img/whitewolf_logo.webp" alt="Whitewolf Intelligence" class="w-8 h-8 object-contain">
+                <span class="font-bold text-sm uppercase tracking-wider text-white">Whitewolf Intelligence</span>
             </div>
             <nav class="flex items-center space-x-6">
                 <a href="/dashboard" class="text-xs font-semibold uppercase text-zinc-400 hover:text-white transition-colors">Return to Dashboard</a>
                 <form action="/logout" method="POST" class="inline">
-                    <button type="submit" class="bg-zinc-900 hover:bg-zinc-800 text-white text-[11px] font-bold uppercase tracking-wider px-3.5 py-1.5 rounded border border-darkBorder transition-all">Exit Node</button>
+                    <button type="submit" class="bg-zinc-900 hover:bg-zinc-800 text-white text-[11px] font-bold uppercase tracking-wider px-3.5 py-1.5 rounded border border-darkBorder transition-all">Logout</button>
                 </form>
             </nav>
         </div>
@@ -45,12 +43,12 @@
     <main class="flex-grow max-w-4xl w-full mx-auto px-6 py-10 space-y-8">
         
         <div class="space-y-1">
-            <h1 class="text-2xl font-black tracking-tight text-white">Console Configurations</h1>
-            <p class="text-xs text-darkTextMuted">Manage listener network interfaces, profile identities, and node validation keys.</p>
+            <h1 class="text-2xl font-black tracking-tight text-white">Settings</h1>
+            <p class="text-xs text-darkTextMuted">Manage your account details, network interface, and password.</p>
         </div>
 
         {% if msg %}
-            <div class="p-3.5 rounded text-xs border bg-brandGreen/10 border-brandGreen/20 text-emerald-400 flex items-start space-x-2">
+            <div class="p-3.5 rounded text-xs border bg-brandBlue/10 border-brandBlue/20 text-blue-400 flex items-start space-x-2">
                 <span>{{ msg }}</span>
             </div>
         {% endif %}
@@ -64,29 +62,52 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             
             <div class="space-y-2">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-zinc-300">Operational Target</h3>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-zinc-300">Account</h3>
                 <p class="text-[11px] text-darkTextMuted leading-relaxed">
-                    Set your bound listening socket hardware parameters. Ensure the user running the application loop maintains sufficient root privileges to manipulate capture devices.
+                    Your username and login email for this dashboard.
+                </p>
+            </div>
+
+            <div class="md:col-span-2 bg-darkCard border border-darkBorder p-6 rounded-xl space-y-4">
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-zinc-400">Username</span>
+                    <span class="font-mono text-white">{{ user.username }}</span>
+                </div>
+                <div class="flex items-center justify-between text-sm border-t border-darkBorder pt-4">
+                    <span class="text-zinc-400">Role</span>
+                    <span class="font-mono text-white">{{ user.role if user.role else "Administrator" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <hr class="border-darkBorder">
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <div class="space-y-2">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-zinc-300">Network Monitoring</h3>
+                <p class="text-[11px] text-darkTextMuted leading-relaxed">
+                    Choose which network interface to watch, and update the email tied to your account. Note: running the app usually needs admin (root) access to monitor traffic.
                 </p>
             </div>
 
             <div class="md:col-span-2 bg-darkCard border border-darkBorder p-6 rounded-xl">
                 <form action="/settings/profile" method="POST" class="space-y-5">
                     <div class="space-y-1.5">
-                        <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Registered Administrative Email</label>
+                        <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Email Address</label>
                         <input type="email" name="email" value="{{ user.email }}" required
-                               class="w-full bg-zinc-900 border border-darkBorder rounded px-3.5 py-2 text-sm text-white focus:outline-none focus:border-brandGreen focus:ring-1 focus:ring-brandGreen/30 transition-all">
+                               class="w-full bg-zinc-900 border border-darkBorder rounded px-3.5 py-2 text-sm text-white focus:outline-none focus:border-brandBlue focus:ring-1 focus:ring-brandBlue/30 transition-all">
                     </div>
 
                     <div class="space-y-1.5">
-                        <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Active Capture Interface Label (e.g. lo, eth0, wlan0)</label>
+                        <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Network Interface (e.g. lo, eth0, wlan0)</label>
                         <input type="text" name="iface" value="{{ user.iface }}" required
-                               class="w-full bg-zinc-900 border border-darkBorder rounded px-3.5 py-2 text-sm text-white font-mono focus:outline-none focus:border-brandGreen focus:ring-1 focus:ring-brandGreen/30 transition-all">
+                               class="w-full bg-zinc-900 border border-darkBorder rounded px-3.5 py-2 text-sm text-white font-mono focus:outline-none focus:border-brandBlue focus:ring-1 focus:ring-brandBlue/30 transition-all">
                     </div>
 
                     <div class="flex justify-end">
-                        <button type="submit" class="bg-brandGreen hover:bg-brandGreenHover text-white font-bold text-xs uppercase tracking-wider px-4 py-2 rounded transition-colors shadow-md">
-                            Commit Settings Signature
+                        <button type="submit" class="bg-brandBlue hover:bg-brandBlueHover text-white font-bold text-xs uppercase tracking-wider px-4 py-2 rounded transition-colors shadow-md">
+                            Save Changes
                         </button>
                     </div>
                 </form>
@@ -98,29 +119,29 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             
             <div class="space-y-2">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-zinc-300">Authentication Keys</h3>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-zinc-300">Change Password</h3>
                 <p class="text-[11px] text-darkTextMuted leading-relaxed">
-                    Rotate local environment access hashes. Updating access parameters drops current sessions to verify fresh validation sequences.
+                    Update your login password. You'll need to sign in again after this change.
                 </p>
             </div>
 
             <div class="md:col-span-2 bg-darkCard border border-darkBorder p-6 rounded-xl">
                 <form action="/settings/password" method="POST" class="space-y-5">
                     <div class="space-y-1.5">
-                        <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Current Account Signature Key</label>
+                        <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Current Password</label>
                         <input type="password" name="old_password" required placeholder="••••••••"
-                               class="w-full bg-zinc-900 border border-darkBorder rounded px-3.5 py-2 text-sm text-white focus:outline-none focus:border-brandGreen focus:ring-1 focus:ring-brandGreen/30 transition-all">
+                               class="w-full bg-zinc-900 border border-darkBorder rounded px-3.5 py-2 text-sm text-white focus:outline-none focus:border-brandBlue focus:ring-1 focus:ring-brandBlue/30 transition-all">
                     </div>
 
                     <div class="space-y-1.5">
-                        <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">New Core Target Password Key</label>
+                        <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">New Password</label>
                         <input type="password" name="new_password" required placeholder="••••••••"
-                               class="w-full bg-zinc-900 border border-darkBorder rounded px-3.5 py-2 text-sm text-white focus:outline-none focus:border-brandGreen focus:ring-1 focus:ring-brandGreen/30 transition-all">
+                               class="w-full bg-zinc-900 border border-darkBorder rounded px-3.5 py-2 text-sm text-white focus:outline-none focus:border-brandBlue focus:ring-1 focus:ring-brandBlue/30 transition-all">
                     </div>
 
                     <div class="flex justify-end">
-                        <button type="submit" class="bg-brandGreen hover:bg-brandGreenHover text-white font-bold text-xs uppercase tracking-wider px-4 py-2 rounded transition-colors shadow-md">
-                            Rotate Access Token
+                        <button type="submit" class="bg-brandBlue hover:bg-brandBlueHover text-white font-bold text-xs uppercase tracking-wider px-4 py-2 rounded transition-colors shadow-md">
+                            Update Password
                         </button>
                     </div>
                 </form>
@@ -130,7 +151,7 @@
     </main>
 
     <footer class="border-t border-darkBorder py-6 text-center text-[11px] text-zinc-600 bg-zinc-950/40">
-        System Operational Matrix Layer. Configuration profiles parsed directly onto internal database scopes.
+        Whitewolf Intelligence — Settings are saved to your local account profile.
     </footer>
 
 </body>
