@@ -11,8 +11,8 @@
             theme: {
                 extend: {
                     colors: {
-                        brandGreen: '#16a34a',
-                        brandGreenHover: '#15803d',
+                        brandBlue: '#3b82f6',
+                        brandBlueHover: '#2563eb',
                         darkBg: '#09090b',
                         darkCard: '#141417',
                         darkBorder: '#27272a',
@@ -23,7 +23,7 @@
         }
     </script>
 </head>
-<body class="min-h-screen bg-darkBg text-zinc-50 flex overflow-hidden font-sans selection:bg-brandGreen/30">
+<body class="min-h-screen bg-darkBg text-zinc-50 flex overflow-hidden font-sans selection:bg-brandBlue/30">
 
     <div class="w-full min-h-screen flex">
         
@@ -31,14 +31,10 @@
             <canvas id="telemetryCanvas" class="absolute inset-0 w-full h-full opacity-60 pointer-events-auto"></canvas>
             
             <div class="relative z-10 p-12 max-w-lg text-left space-y-6 pointer-events-none select-none">
-                <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-brandGreen to-emerald-800 flex items-center justify-center p-2.5 shadow-xl shadow-brandGreen/20 border border-brandGreen/30 animate-pulse">
-                    <svg class="w-full h-full text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-                    </svg>
-                </div>
+                <img src="/static/img/whitewolf_logo.webp" alt="Whitewolf Intelligence" class="w-16 h-16 object-contain filter drop-shadow-[0_0_18px_rgba(59,130,246,0.35)]">
                 <div>
                     <h2 class="text-3xl font-black tracking-tight text-white mb-3">
-                        Whitewolf Security
+                        Whitewolf Intelligence
                     </h2>
                     <p class="text-sm text-darkTextMuted leading-relaxed">
                         Welcome to your network security monitoring application. This platform scans your system for unrecognized connection behavior, organizes traffic details, and keeps a structured visual record of security status events to help protect your workspace from digital threats.
@@ -51,7 +47,7 @@
             
             <div class="flex items-center justify-between">
                 <a href="/" class="flex items-center space-x-2 group">
-                    <svg class="w-4 h-4 text-brandGreen transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 text-brandBlue transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
                     <span class="text-xs font-semibold uppercase tracking-widest text-darkTextMuted group-hover:text-white transition-colors">Go Back</span>
@@ -77,18 +73,18 @@
                     <div class="space-y-1.5">
                         <label for="username" class="text-xs font-medium text-zinc-300 uppercase tracking-wider">Username</label>
                         <input type="text" id="username" name="username" required autocomplete="username"
-                               class="w-full bg-zinc-900 border border-darkBorder rounded px-3.5 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-brandGreen focus:ring-1 focus:ring-brandGreen/40 transition-all"
+                               class="w-full bg-zinc-900 border border-darkBorder rounded px-3.5 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-brandBlue focus:ring-1 focus:ring-brandBlue/40 transition-all"
                                placeholder="Enter username">
                     </div>
 
                     <div class="space-y-1.5">
                         <label for="password" class="text-xs font-medium text-zinc-300 uppercase tracking-wider">Password</label>
                         <input type="password" id="password" name="password" required autocomplete="current-password"
-                               class="w-full bg-zinc-900 border border-darkBorder rounded px-3.5 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-brandGreen focus:ring-1 focus:ring-brandGreen/40 transition-all"
+                               class="w-full bg-zinc-900 border border-darkBorder rounded px-3.5 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-brandBlue focus:ring-1 focus:ring-brandBlue/40 transition-all"
                                placeholder="Enter password">
                     </div>
 
-                    <button type="submit" class="w-full bg-brandGreen hover:bg-brandGreenHover text-white font-semibold text-sm py-3 rounded transition-all shadow-md shadow-brandGreen/10 flex items-center justify-center space-x-2 group">
+                    <button type="submit" class="w-full bg-brandBlue hover:bg-brandBlueHover text-white font-semibold text-sm py-3 rounded transition-all shadow-md shadow-brandBlue/10 flex items-center justify-center space-x-2 group">
                         <span>Sign In</span>
                         <svg class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
@@ -98,7 +94,7 @@
 
                 <div class="text-center text-xs text-darkTextMuted">
                     Don't have an account yet? 
-                    <a href="/setup" class="text-brandGreen hover:underline font-medium ml-1">Create an administrator profile</a>
+                    <a href="/setup" class="text-brandBlue hover:underline font-medium ml-1">Create an administrator profile</a>
                 </div>
             </div>
 
@@ -167,7 +163,7 @@
             draw() {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = '#16a34a';
+                ctx.fillStyle = '#3b82f6';
                 ctx.fill();
             }
         }
@@ -193,7 +189,7 @@
                         ctx.moveTo(nodes[i].x, nodes[i].y);
                         ctx.lineTo(nodes[j].x, nodes[j].y);
                         const alpha = (1 - (dist / maxDistance)) * 0.18;
-                        ctx.strokeStyle = `rgba(22, 163, 74, ${alpha})`;
+                        ctx.strokeStyle = `rgba(59, 130, 246, ${alpha})`;
                         ctx.lineWidth = 0.8;
                         ctx.stroke();
                     }

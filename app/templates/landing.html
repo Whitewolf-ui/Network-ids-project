@@ -36,6 +36,16 @@
             opacity: 1;
             transform: translateY(0);
         }
+        .word {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(14px);
+            transition: opacity 0.45s ease, transform 0.45s ease;
+        }
+        .word.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between transition-colors duration-300 bg-lightBg text-zinc-900 dark:bg-darkBg dark:text-zinc-50 selection:bg-brandBlue/30">
@@ -81,13 +91,11 @@
         </div>
 
         <h1 class="text-4xl md:text-6xl font-black tracking-tight max-w-4xl mb-6 leading-[1.15] text-zinc-900 dark:text-white">
-            <span class="fade-in block">Building Infrastructure for</span>
-            <span class="fade-in block bg-clip-text text-transparent bg-gradient-to-r from-brandBlue to-sky-500 dark:from-brandBlue dark:to-sky-400">Defensive Cyber Operations</span>
+            <span class="word-fade block" data-text="Building Infrastructure for"></span>
+            <span class="word-fade block bg-clip-text text-transparent bg-gradient-to-r from-brandBlue to-sky-500 dark:from-brandBlue dark:to-sky-400" data-text="Defensive Cyber Operations"></span>
         </h1>
 
-        <p class="fade-in text-base md:text-lg text-lightTextMuted dark:text-darkTextMuted max-w-2xl mb-10 leading-relaxed">
-            Protecting computing environments through targeted alert inspection, hardware packet telemetry, and multi-user defensive log spaces engineered to block persistent network threats.
-        </p>
+        <p class="word-fade text-base md:text-lg text-lightTextMuted dark:text-darkTextMuted max-w-2xl mb-10 leading-relaxed" data-text="Protecting computing environments through targeted alert inspection, hardware packet telemetry, and multi-user defensive log spaces engineered to block persistent network threats."></p>
 
         <div class="fade-in flex flex-col sm:flex-row items-center justify-center gap-4 mb-20 w-full">
             {% if logged_in %}
@@ -242,18 +250,38 @@
             }
         });
 
-        // Scroll fade-in with staggered delay
+        // Split word-fade elements into individual word spans
+        document.querySelectorAll('.word-fade').forEach(el => {
+            const text = el.getAttribute('data-text');
+            el.innerHTML = text.split(' ').map(w => `<span class="word">${w}</span>`).join(' ');
+        });
+
+        // Generic section fade-in
         const fadeEls = document.querySelectorAll('.fade-in');
-        const observer = new IntersectionObserver((entries) => {
+        const sectionObserver = new IntersectionObserver((entries) => {
             entries.forEach((entry, i) => {
                 if (entry.isIntersecting) {
                     setTimeout(() => entry.target.classList.add('visible'), i % 5 * 80);
-                    observer.unobserve(entry.target);
+                    sectionObserver.unobserve(entry.target);
                 }
             });
         }, { threshold: 0.12 });
+        fadeEls.forEach(el => sectionObserver.observe(el));
 
-        fadeEls.forEach(el => observer.observe(el));
+        // Word-by-word fade-in, fast stagger
+        const wordFadeEls = document.querySelectorAll('.word-fade');
+        const wordObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const words = entry.target.querySelectorAll('.word');
+                    words.forEach((w, i) => {
+                        setTimeout(() => w.classList.add('visible'), i * 40);
+                    });
+                    wordObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.2 });
+        wordFadeEls.forEach(el => wordObserver.observe(el));
     </script>
 
 </body>
