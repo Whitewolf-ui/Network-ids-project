@@ -64,7 +64,6 @@ def setup_submit(
     username: str = Form(...),
     email: str = Form(...),
     password: str = Form(...),
-    confirm_password: str = Form(...),
 ):
     error = None
     username = username.strip()
@@ -73,8 +72,6 @@ def setup_submit(
         error = "Username must be at least 3 characters."
     elif len(password) < 8:
         error = "Password must be at least 8 characters."
-    elif password != confirm_password:
-        error = "Passwords don't match."
     elif database.get_user_by_username(username):
         error = "That username is already taken."
 
