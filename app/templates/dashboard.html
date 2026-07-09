@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Whitewolf Intelligence — {{ company.name }} Console</title>
+    <title>Whitewolf Intelligence — Console Matrix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
@@ -16,7 +16,9 @@
                         brandBlueHover: '#2563eb',
                         darkBg: '#000000',
                         darkCard: '#0e0f13',
-                        darkBorder: '#1f2430'
+                        darkBorder: '#1f2430',
+                        matrixGreen: '#00ff66',
+                        matrixDim: '#003311'
                     }
                 }
             }
@@ -30,14 +32,47 @@
                 radial-gradient(ellipse 1200px 700px at 50% 110%, rgba(59,130,246,0.06), transparent 60%),
                 #000000;
         }
+        .scan-line {
+            background: linear-gradient(to bottom, rgba(0,255,102,0), rgba(0,255,102,0.15) 50%, rgba(0,255,102,0) 100%);
+            animation: scan 2.5s linear infinite;
+        }
+        @keyframes scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
     </style>
 </head>
-<body class="min-h-screen text-zinc-100 font-sans flex flex-col justify-between selection:bg-brandBlue/30">
+<body class="min-h-screen text-zinc-100 font-sans flex flex-col justify-between selection:bg-brandBlue/30 relative overflow-x-hidden">
 
-    <header class="border-b border-darkBorder bg-black/70 backdrop-blur sticky top-0 z-50">
+    <div id="scifi-modal" class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 hidden font-mono">
+        <div class="max-w-xl w-full border-2 border-matrixGreen/30 bg-black relative rounded p-6 shadow-[0_0_30px_rgba(0,255,102,0.15)] overflow-hidden">
+            <div class="absolute inset-0 scan-line pointer-events-none"></div>
+            
+            <div class="flex items-center justify-between border-b border-matrixGreen/20 pb-3 mb-4">
+                <div class="flex items-center space-x-2">
+                    <div class="w-2 h-2 rounded-full bg-matrixGreen animate-pulse"></div>
+                    <span class="text-xs font-bold text-matrixGreen uppercase tracking-widest">SYSTEM ECHO INITIALIZATION // MATRIX ACTIVATE</span>
+                </div>
+                <span class="text-[10px] text-matrixGreen/60">K99-83 - OVERRIDE AUTODYN</span>
+            </div>
+
+            <div id="modal-terminal-logs" class="text-xs text-matrixGreen space-y-1.5 h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-matrixGreen/20">
+                <div>[SYSTEM] INITIALIZING CAPTURING SOCKET MATRIX...</div>
+            </div>
+
+            <div class="mt-6 border-t border-matrixGreen/20 pt-4 flex justify-between items-center text-[10px] text-matrixGreen/50">
+                <div>PROMISCUOUS SOCKET: BINDING</div>
+                <div>STATE: OVERRIDE ACCEPTED</div>
+            </div>
+        </div>
+    </div>
+
+    <header class="border-b border-darkBorder bg-black/70 backdrop-blur sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <img src="/static/img/whitewolf_logo.webp" alt="Whitewolf Intelligence" class="w-10 h-10 object-contain">
+                <div class="w-8 h-8 rounded bg-gradient-to-br from-brandBlue to-blue-700 flex items-center justify-center p-1.5 shadow-md shadow-brandBlue/10 border border-brandBlue/20">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                </div>
                 <div class="flex flex-col leading-none">
                     <span class="font-bold text-sm tracking-widest text-white">WHITEWOLF <span class="text-zinc-400">INTELLIGENCE</span></span>
                     <span class="text-[10px] uppercase tracking-widest text-brandBlue mt-0.5">{{ company.name }} Console</span>
@@ -113,7 +148,10 @@
 
         <div class="bg-darkCard border border-darkBorder rounded-xl overflow-hidden shadow-sm">
             <div class="p-6 border-b border-darkBorder flex items-center justify-between">
-                <h3 class="text-sm font-bold uppercase tracking-wider text-zinc-300">Recent Logs & Security Alerts</h3>
+                <div>
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-zinc-300">Recent Logs & Security Alerts</h3>
+                    <p class="text-[11px] text-zinc-500 mt-0.5">Click any row sequence to expand incident definitions and remediation vectors.</p>
+                </div>
                 <button onclick="updateDashboardMetrics()" class="text-xs text-brandBlue hover:underline font-medium flex items-center space-x-1">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.253 8H18"></path></svg>
                     <span>Refresh</span>
@@ -124,6 +162,7 @@
                 <table class="w-full text-left border-collapse text-xs">
                     <thead>
                         <tr class="bg-black/60 border-b border-darkBorder text-zinc-400 font-mono uppercase tracking-wider text-[10px]">
+                            <th class="p-4 w-12"></th>
                             <th class="p-4">Time</th>
                             <th class="p-4">Alert Type</th>
                             <th class="p-4">Source Location</th>
@@ -133,7 +172,7 @@
                     </thead>
                     <tbody id="alerts-table-body" class="divide-y divide-darkBorder/60 font-mono text-zinc-300">
                         <tr>
-                            <td colspan="5" class="p-8 text-center text-zinc-500">Awaiting status streaming parameters...</td>
+                            <td colspan="6" class="p-8 text-center text-zinc-500">Awaiting status streaming parameters...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -150,6 +189,8 @@
         let trendChart;
         const btnToggle = document.getElementById('btn-toggle');
         const statusBadge = document.getElementById('status-badge');
+        const scifiModal = document.getElementById('scifi-modal');
+        const terminalLogs = document.getElementById('modal-terminal-logs');
 
         function initChartStructure() {
             const ctx = document.getElementById('incidentChart').getContext('2d');
@@ -183,6 +224,39 @@
             } catch (err) { console.error("Error monitoring status frames:", err); }
         }
 
+        function toggleRowBreakdown(id) {
+            const row = document.getElementById(`breakdown-${id}`);
+            const icon = document.getElementById(`icon-${id}`);
+            if (row.classList.contains('hidden')) {
+                row.classList.remove('hidden');
+                icon.style.transform = 'rotate(90deg)';
+            } else {
+                row.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function generateAnalysis(type, port, details) {
+            let explanation = "Repetitive connection sequences mapped onto unassigned port bounds.";
+            let advice = "Verify external firewall drop policies for non-essential exposed ports.";
+            
+            const lowerType = type.toUpperCase();
+            if (lowerType.includes("SCAN") || lowerType.includes("NMAP")) {
+                explanation = `A sequential port exploration mapping pattern was detected targeting Port ${port || 'Multiple'}. This technique is used to find open entry pathways and running software fingerprints.`;
+                advice = "Implement connection limits via iptables, or enable an automated mitigation service like Fail2ban to block scanning origin sequences.";
+            } else if (lowerType.includes("BRUTE") || lowerType.includes("HYDRA")) {
+                explanation = `Repeated high-frequency access configurations detected targeting system authentication sockets on Port ${port}. Looks like automated dictionary validation activity.`;
+                advice = "Enforce public-key isolation matrices, migrate default listener port anchors, and deploy structural rate-limit rules.";
+            } else if (lowerType.includes("DOS") || lowerType.includes("FLOOD")) {
+                explanation = "A flood of concurrent TCP/UDP tracking anomalies was logged, aiming to resource-exhaust active loop capacities.";
+                advice = "Adjust standard timeout constants, scale your network's capacity bounds, or activate upstream synchronization cookie verification frameworks.";
+            } else if (details && details.length > 5) {
+                explanation = `Anomalous pattern discovered inside payload signatures: "${details}"`;
+            }
+            
+            return { explanation, advice };
+        }
+
         async function updateDashboardMetrics() {
             await fetchStatusUpdate();
             try {
@@ -195,17 +269,47 @@
                 const tbody = document.getElementById('alerts-table-body');
 
                 if (!alertsData || alertsData.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-zinc-500">No security alerts have been triggered yet.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-zinc-500">No security alerts have been triggered yet.</td></tr>`;
                 } else {
-                    tbody.innerHTML = alertsData.map(item => `
-                        <tr class="hover:bg-zinc-900/40 transition-colors">
-                            <td class="p-4 text-zinc-400 whitespace-nowrap">${item.timestamp ? item.timestamp.split('.')[0] : '—'}</td>
-                            <td class="p-4 font-bold ${item.alert_type.includes('SCAN') ? 'text-amber-400' : 'text-red-400'}">${item.alert_type}</td>
-                            <td class="p-4 text-zinc-200">${item.source_ip}</td>
-                            <td class="p-4 text-zinc-200">${item.dest_port ?? 'Multiple'}</td>
-                            <td class="p-4 text-zinc-400 max-w-xs truncate" title="${item.details || ''}">${item.details || '—'}</td>
-                        </tr>
-                    `).join('');
+                    let rowsContent = "";
+                    alertsData.forEach((item, index) => {
+                        const analysis = generateAnalysis(item.alert_type, item.dest_port, item.details);
+                        const isScan = item.alert_type.toUpperCase().includes('SCAN');
+                        
+                        rowsContent += `
+                            <tr onclick="toggleRowBreakdown(${index})" class="hover:bg-zinc-900/50 cursor-pointer border-b border-darkBorder/40 transition-colors">
+                                <td class="p-4 text-center">
+                                    <svg id="icon-${index}" class="w-3 h-3 text-zinc-500 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
+                                </td>
+                                <td class="p-4 text-zinc-400 whitespace-nowrap">${item.timestamp ? item.timestamp.split('.')[0] : '—'}</td>
+                                <td class="p-4 font-bold ${isScan ? 'text-amber-400' : 'text-red-400'}">${item.alert_type}</td>
+                                <td class="p-4 text-zinc-200">${item.source_ip}</td>
+                                <td class="p-4 text-zinc-200">${item.dest_port ?? 'Multiple'}</td>
+                                <td class="p-4 text-zinc-400 max-w-xs truncate">${item.details || '—'}</td>
+                            </tr>
+                            <tr id="breakdown-${index}" class="hidden bg-zinc-950/60 border-b border-darkBorder/40">
+                                <td colspan="6" class="p-5 text-xs space-y-3 font-sans">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 leading-relaxed">
+                                        <div class="space-y-1 bg-black/40 border border-darkBorder/40 p-4 rounded">
+                                            <div class="text-[10px] font-mono font-bold uppercase tracking-wider text-red-400 flex items-center space-x-1.5">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                                                <span>Incident Forensic Summary</span>
+                                            </div>
+                                            <p class="text-zinc-300 pt-1 font-mono text-[11px]">${analysis.explanation}</p>
+                                        </div>
+                                        <div class="space-y-1 bg-black/40 border border-darkBorder/40 p-4 rounded">
+                                            <div class="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-400 flex items-center space-x-1.5">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                                <span>Remediation & Hardening Steps</span>
+                                            </div>
+                                            <p class="text-zinc-300 pt-1 font-mono text-[11px]">${analysis.advice}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    tbody.innerHTML = rowsContent;
                 }
 
                 const chartRes = await fetch('/api/chart-data?minutes=15');
@@ -218,12 +322,64 @@
             } catch (err) { console.error("Metrics alignment exception:", err); }
         }
 
+        function runScifiSequence() {
+            return new Promise((resolve) => {
+                scifiModal.classList.remove('hidden');
+                terminalLogs.innerHTML = "";
+                
+                const sequences = [
+                    { value: 260, text: "INITIALIZING CAPTURING SOCKET MATRIX..." },
+                    { value: 262, text: "PARSING CONFIGURED NETWORK HARDWARE HOOKS..." },
+                    { value: 273, text: "OPENING RAW PROMISCUOUS SOCKET CHANNELS..." },
+                    { value: 274, text: "INJECTING LIVE KERNEL BINDING ANCHORS..." },
+                    { value: 275, text: "CLEARING LOCAL DATA STREAMING CACHES..." },
+                    { value: 278, text: "ESTABLISHING ASYNC SQLITE LOGGING CHANNELS..." },
+                    { value: 440, text: "ALIGNED WITH CONFIGURATION MATRIX INTERFACES." },
+                    { value: 441, text: "EVALUATING LICENSE KEY PAIRS... OVERRIDE ACCEPTED", type: 'DENIED' },
+                    { value: 442, text: "ACTIVATING REALTIME SECURITY LOGGING CYCLES..." }
+                ];
+
+                let currentLine = 0;
+                function printNextLine() {
+                    if (currentLine >= sequences.length) {
+                        setTimeout(() => {
+                            scifiModal.classList.add('hidden');
+                            resolve();
+                        }, 800);
+                        return;
+                    }
+
+                    const seq = sequences[currentLine];
+                    const div = document.createElement('div');
+                    div.className = "flex items-start font-mono text-[11px] tracking-wide leading-5";
+                    
+                    if (seq.type === 'DENIED') {
+                        div.innerHTML = `<span class="text-zinc-500 w-12 shrink-0">| ${seq.value}</span> <span class="flex-grow text-amber-500">${seq.text}</span> <span class="text-amber-500 font-bold px-1 ml-2">[DENIED]</span>`;
+                    } else {
+                        div.innerHTML = `<span class="text-zinc-500 w-12 shrink-0">| ${seq.value}</span> <span class="flex-grow">${seq.text}</span> <span class="text-matrixGreen font-bold px-1 ml-2">[ACCEPTED]</span>`;
+                    }
+                    
+                    terminalLogs.appendChild(div);
+                    terminalLogs.scrollTop = terminalLogs.scrollHeight;
+                    
+                    currentLine++;
+                    setTimeout(printNextLine, 220);
+                }
+                printNextLine();
+            });
+        }
+
         btnToggle.addEventListener('click', async () => {
             const isRunning = statusBadge.innerText === "ACTIVE";
             const endpoint = isRunning ? '/api/monitoring/stop' : '/api/monitoring/start';
+            
             btnToggle.disabled = true;
             btnToggle.innerText = "Processing...";
+
             try {
+                if (!isRunning) {
+                    await runScifiSequence();
+                }
                 await fetch(endpoint, { method: 'POST' });
                 await updateDashboardMetrics();
             } catch (err) { console.error("Toggle exception:", err); }
