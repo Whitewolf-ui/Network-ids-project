@@ -2,15 +2,14 @@
 main.py — Whitewolf Security Network IDS web application.
 """
 from pathlib import Path
-from fastapi import Request, Form, Body
 
-from fastapi import FastAPI, Request, Form
+from fastapi import FastAPI, Request, Form, Body
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app import database, auth
-from app.ids_engine import engine, DANGEROUS_PORTS, PORT_SCAN_THRESHOLD
+from app.ids_engine import engine, DANGEROUS_PORTS, PORT_SCAN_THRESHOLD, get_available_interfaces
 
 BASE_DIR = Path(__file__).parent
 
@@ -201,14 +200,22 @@ def require_api_user(request: Request):
     return current_user(request)
 
 
+@app.get("/api/interfaces")
+def get_interfaces(request: Request):
+    if not require_api_user(request):
+        return {"ok": False, "message": "Not authenticated."}
+    return {"ok": True, "interfaces": get_available_interfaces()}
+
+
 @app.post("/api/monitoring/start")
-def start_monitoring(request: Request):
+def start_monitoring(request: Request, body: dict = Body(default={})):
     user = require_api_user(request)
     if not user:
         return {"ok": False, "message": "Not authenticated."}
     
-    print(f"[MAIN] Starting engine for user {user['id']}, iface={user.get('iface')}")
-    ok, message = engine.start(user_id=user["id"], iface=user.get("iface"))
+    iface = body.get("iface") or user.get("iface") or "lo"
+    print(f"[MAIN] Starting engine for user {user['id']}, iface={iface}")
+    ok, message = engine.start(user_id=user["id"], iface=iface)
     status = engine.status()
     print(f"[MAIN] engine.start() returned ok={ok}, message={message}")
     print(f"[MAIN] engine.status() = {status}")
@@ -255,28 +262,7 @@ def chart_data(request: Request, minutes: int = 30):
         return {"labels": [], "values": []}
     return database.get_chart_data(user_id=user["id"], minutes=minutes)
 
-@app.get("/api/interfaces")
-def get_interfaces(request: Request):
-    if not require_api_user(request):
-        return {"ok": False, "message": "Not authenticated."}
-    from app.ids_engine import get_available_interfaces
-    return {"ok": True, "interfaces": get_available_interfaces()}
 
-
-@app.post("/api/monitoring/start")
-def start_monitoring(request: Request, body: dict = Body(default={})):
-    user = require_api_user(request)
-    if not user:
-        return {"ok": False, "message": "Not authenticated."}
-    
-    iface = body.get("iface") or user.get("iface") or "lo"
-    print(f"[MAIN] Starting engine for user {user['id']}, iface={iface}")
-    ok, message = engine.start(user_id=user["id"], iface=iface)
-    status = engine.status()
-    print(f"[MAIN] engine.start() returned ok={ok}, message={message}")
-    print(f"[MAIN] engine.status() = {status}")
-    
-    return {"ok": ok, "message": message, "status": status}
 @app.post("/api/alerts/clear")
 def clear_alerts(request: Request):
     user = require_api_user(request)

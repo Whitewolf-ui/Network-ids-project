@@ -1,7 +1,8 @@
-fastapi==0.139.0
-uvicorn[standard]==0.50.2
-jinja2==3.1.6
-python-multipart==0.0.20
-supabase==2.15.0
-python-dotenv==1.2.2
-scapy==2.7.0
+fastapi==0.111.0
+uvicorn[standard]==0.30.0
+jinja2==3.1.4
+python-multipart==0.0.9
+supabase==2.5.1
+python-dotenv==1.0.1
+scapy==2.5.0
+httpx==0.27.0
