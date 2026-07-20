@@ -2,6 +2,7 @@
 main.py — Whitewolf Security Network IDS web application.
 """
 from pathlib import Path
+from fastapi import Request, Form, Body
 
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -205,8 +206,14 @@ def start_monitoring(request: Request):
     user = require_api_user(request)
     if not user:
         return {"ok": False, "message": "Not authenticated."}
+    
+    print(f"[MAIN] Starting engine for user {user['id']}, iface={user.get('iface')}")
     ok, message = engine.start(user_id=user["id"], iface=user.get("iface"))
-    return {"ok": ok, "message": message, "status": engine.status()}
+    status = engine.status()
+    print(f"[MAIN] engine.start() returned ok={ok}, message={message}")
+    print(f"[MAIN] engine.status() = {status}")
+    
+    return {"ok": ok, "message": message, "status": status}
 
 
 @app.post("/api/monitoring/stop")
@@ -248,7 +255,28 @@ def chart_data(request: Request, minutes: int = 30):
         return {"labels": [], "values": []}
     return database.get_chart_data(user_id=user["id"], minutes=minutes)
 
+@app.get("/api/interfaces")
+def get_interfaces(request: Request):
+    if not require_api_user(request):
+        return {"ok": False, "message": "Not authenticated."}
+    from app.ids_engine import get_available_interfaces
+    return {"ok": True, "interfaces": get_available_interfaces()}
 
+
+@app.post("/api/monitoring/start")
+def start_monitoring(request: Request, body: dict = Body(default={})):
+    user = require_api_user(request)
+    if not user:
+        return {"ok": False, "message": "Not authenticated."}
+    
+    iface = body.get("iface") or user.get("iface") or "lo"
+    print(f"[MAIN] Starting engine for user {user['id']}, iface={iface}")
+    ok, message = engine.start(user_id=user["id"], iface=iface)
+    status = engine.status()
+    print(f"[MAIN] engine.start() returned ok={ok}, message={message}")
+    print(f"[MAIN] engine.status() = {status}")
+    
+    return {"ok": ok, "message": message, "status": status}
 @app.post("/api/alerts/clear")
 def clear_alerts(request: Request):
     user = require_api_user(request)
