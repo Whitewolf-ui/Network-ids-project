@@ -2,4 +2,6 @@ fastapi==0.139.0
 uvicorn[standard]==0.50.2
 jinja2==3.1.6
 python-multipart==0.0.20
+supabase==2.15.0
+python-dotenv==1.2.2
 scapy==2.7.0
