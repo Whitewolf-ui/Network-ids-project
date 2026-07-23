@@ -1,15 +1,40 @@
-"""
-ids_engine.py — Packet monitoring engine.
-"""
-import threading
-import datetime
-import subprocess
-import re
-from collections import defaultdict
+import os
+import socket
 
-from app import database
+def start(user_id, iface="lo"):
+    """Start packet capture engine"""
+    
+    # Check if we're on Render (no real packet capture available)
+    if os.getenv("RENDER"):
+        print("[ENGINE] Running on Render - using mock mode")
+        return _start_mock(user_id, iface)
+    
+    # Real packet capture code (existing code)
+    return _start_real(user_id, iface)
 
-try:
+def _start_mock(user_id, iface):
+    """Mock packet capture for environments without packet capture privileges"""
+    global engine_running, engine_start_time, current_user_id, current_iface
+    
+    if engine_running:
+        return False, "Engine already running"
+    
+    engine_running = True
+    engine_start_time = datetime.now()
+    current_user_id = user_id
+    current_iface = iface
+    
+    print(f"[ENGINE MOCK] Started on {iface} for user {user_id}")
+    return True, f"Mock engine started on {iface}"
+
+def _start_real(user_id, iface="lo"):
+    """Real packet capture (existing code)"""
+    global engine_running, engine_start_time, current_user_id, current_iface
+    
+    if engine_running:
+        return False, "Engine already running"
+    
+    try:
     from scapy.all import sniff, IP, TCP
     SCAPY_AVAILABLE = True
 except ImportError:
