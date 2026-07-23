@@ -1,40 +1,16 @@
+"""
+ids_engine.py — Packet monitoring engine with mock mode fallback for Render.
+"""
+import threading
+import datetime
+import subprocess
+import re
 import os
-import socket
+from collections import defaultdict
 
-def start(user_id, iface="lo"):
-    """Start packet capture engine"""
-    
-    # Check if we're on Render (no real packet capture available)
-    if os.getenv("RENDER"):
-        print("[ENGINE] Running on Render - using mock mode")
-        return _start_mock(user_id, iface)
-    
-    # Real packet capture code (existing code)
-    return _start_real(user_id, iface)
+from app import database
 
-def _start_mock(user_id, iface):
-    """Mock packet capture for environments without packet capture privileges"""
-    global engine_running, engine_start_time, current_user_id, current_iface
-    
-    if engine_running:
-        return False, "Engine already running"
-    
-    engine_running = True
-    engine_start_time = datetime.now()
-    current_user_id = user_id
-    current_iface = iface
-    
-    print(f"[ENGINE MOCK] Started on {iface} for user {user_id}")
-    return True, f"Mock engine started on {iface}"
-
-def _start_real(user_id, iface="lo"):
-    """Real packet capture (existing code)"""
-    global engine_running, engine_start_time, current_user_id, current_iface
-    
-    if engine_running:
-        return False, "Engine already running"
-    
-    try:
+try:
     from scapy.all import sniff, IP, TCP
     SCAPY_AVAILABLE = True
 except ImportError:
@@ -86,6 +62,7 @@ class NetworkIDS:
         self.connection_count = defaultdict(set)
         self._error = None
         self._lock = threading.Lock()
+        self._mock_mode = False  # Track if running in mock mode
 
     def status(self):
         with self._lock:
@@ -97,6 +74,7 @@ class NetworkIDS:
                 "monitored_ips": len(self.connection_count),
                 "scapy_available": SCAPY_AVAILABLE,
                 "error": self._error,
+                "mock_mode": self._mock_mode,
             }
 
     def _packet_monitor(self, packet):
@@ -135,6 +113,7 @@ class NetworkIDS:
                     print(f"[IDS] Alert insert error: {e}", flush=True)
 
     def _run(self):
+        """Real packet capture thread"""
         try:
             print(f"[IDS] Starting sniff on interface: {self.iface}", flush=True)
             sniff(
@@ -170,10 +149,29 @@ class NetworkIDS:
                         pass
             print("[IDS] Engine thread ended", flush=True)
 
+    def _run_mock(self):
+        """Mock packet capture for Render (no real packet capture)"""
+        print(f"[IDS MOCK] Mock engine running on {self.iface}", flush=True)
+        while not self._stop_event.is_set():
+            self._stop_event.wait(timeout=1)
+        
+        with self._lock:
+            self.running = False
+            if self.session_id:
+                try:
+                    database.stop_session(self.session_id)
+                except Exception:
+                    pass
+        print("[IDS MOCK] Mock engine thread ended", flush=True)
+
     def start(self, user_id, iface=None):
         if self.running:
             return False, "Already running."
-        if not SCAPY_AVAILABLE:
+        
+        # Check if we're on Render (no real packet capture possible)
+        on_render = os.getenv("RENDER") is not None
+        
+        if not on_render and not SCAPY_AVAILABLE:
             return False, "Scapy is not installed in this environment."
 
         if iface:
@@ -192,8 +190,15 @@ class NetworkIDS:
         
         with self._lock:
             self.running = True
+            self._mock_mode = on_render
         
-        self._thread = threading.Thread(target=self._run, daemon=True)
+        # Use mock mode on Render, real mode locally
+        if on_render:
+            print(f"[IDS] Running on Render - using mock mode", flush=True)
+            self._thread = threading.Thread(target=self._run_mock, daemon=True)
+        else:
+            self._thread = threading.Thread(target=self._run, daemon=True)
+        
         self._thread.start()
         return True, "Monitoring started."
 
